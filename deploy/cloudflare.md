@@ -1,51 +1,47 @@
-# Cloudflare Pages 部署说明
+# Cloudflare 部署说明
 
-本站是**纯静态站点**（`astro build` 产出 `dist/`，63 个文件 / 2.2 MB，无服务端逻辑）。
-决定使用 **Cloudflare Pages**。
+本站是**纯静态站点**（`astro build` 产出 `dist/`，110 个文件 / 2.2 MB，无 Worker 脚本）。
 
-> 曾经尝试过 **Workers** 路径并连续失败两次，原因见文末「为什么不用 Workers」。
-> Workers 所需的 `wrangler.jsonc` 已删除，避免被 Pages 误读为 Pages Functions 配置。
+**结论：走 Cloudflare Workers 路径。**
 
----
-
-## 项目设置
-
-**Workers & Pages → Create application → Pages 标签 → Connect to Git** → 选仓库。
-
-| 字段 | 值 |
-|---|---|
-| Production branch | `main` |
-| Framework preset | `Astro` |
-| **Root directory** | **`site`** |
-| **Build command** | **`pnpm build`** |
-| **Build output directory** | **`dist`** |
-
-> ⚠️ **Root directory 必须填 `site`。** 仓库根目录没有 `package.json`（它在 `site/`），
-> 留空会导致 Cloudflare 检测不到 Node/pnpm，构建直接失败。这是 Workers 那两次
-> 失败的根因之一。
+> 原计划用 Cloudflare Pages，但 **Pages 已从创建流程中移除** —— Dashboard 里点
+> `Create application` 不再有 Pages 标签，直接进入 Connect to Git（即 Workers）。
+> Pages 文档仍在，入口已合并。下面的配置按 Workers 写。
 
 ---
 
-## 环境变量
+## 一、Dashboard：项目设置
 
-**Settings → Environment variables**（Pages 的环境变量就是这一处；Workers 才把构建
-变量单独放在 Settings → Build 里）。
+进入 Worker → **Settings → Build**（注意是 **Build**，不是「Builds」）
+
+| 字段 | 设为 | 说明 |
+|---|---|---|
+| **Root directory** | `site` | 官方定义：「defines where the build command will be run」 |
+| **Build command** | `pnpm build` | 官方标注 Optional，但静态站必需 |
+| **Deploy command** | `npx wrangler deploy` | 保持默认 |
+| Git branch | `main` | |
+
+> ⚠️ **Root directory 是最容易漏的一项。** 仓库根目录没有 `package.json`（它在 `site/`）。
+> 留空的后果：Cloudflare 检测不到 Node/pnpm，日志里这一行为空 ——
+> `Detected the following tools from environment:`
+> 然后直接跳到 `wrangler deploy` 并失败。**这一行是否非空，是最快的诊断依据。**
+
+## 二、Dashboard：构建变量
+
+**Settings → Build → Build Variables and Secrets**
+
+> ⚠️ 是 **Settings → Build** 里的这一项，**不是** Settings → Variables & Secrets
+> （后者是运行时变量，构建阶段读不到）。
 
 | 变量 | 值 | 必要性 |
 |---|---|---|
-| `PNPM_VERSION` | `11.7.0` | **必须。** 见下方说明 |
-| `NODE_VERSION` | `22` | 可选（`site/.nvmrc` 已写 `22`，双保险） |
+| `PNPM_VERSION` | `11.7.0` | **必须**，见下 |
+| `NODE_VERSION` | `22` | 可选（`site/.nvmrc` 已写 22） |
 
-### 为什么 `PNPM_VERSION` 是必需的
+### 为什么 `PNPM_VERSION` 必须设
 
-Cloudflare Pages **v3 构建镜像的已知限制**（官方文档原文）：
-
-> - Detecting pnpm version detection based `pnpm-lock.yaml` file version.
-> - Detecting Node.js and package managers from `package.json` -> `"engines"`.
-
-也就是说 Pages **不会**从 `pnpm-lock.yaml` 或 `package.json` 推断 pnpm 版本，会用镜像
-自带的默认版本（较旧）。而本项目的 `site/pnpm-workspace.yaml` 使用的是 **pnpm 11 的
-配置语法**：
+Workers 构建镜像的**默认 pnpm 是 10.11.1**（官方 build image 文档列出的默认版本）。
+而本项目的 `site/pnpm-workspace.yaml` 用的是 **pnpm 11 的配置语法**：
 
 ```yaml
 nodeLinker: hoisted
@@ -53,27 +49,68 @@ allowBuilds: { esbuild: true, sharp: true }
 verifyDepsBeforeRun: false
 ```
 
-pnpm 10 不认识 `allowBuilds` / `verifyDepsBeforeRun`。**版本不匹配会导致依赖布局
-不正确，进而构建报 `Cannot find module 'html-escaper'`** —— 这个错误本项目已经踩过
-一次（见 `site/pnpm-workspace.yaml` 顶部说明）。
+pnpm 10 不认识 `allowBuilds` / `verifyDepsBeforeRun`。版本不匹配会导致依赖布局不正确，
+构建报 `Cannot find module 'html-escaper'` —— 这个错误本项目已经踩过一次，
+详见 `site/pnpm-workspace.yaml` 顶部说明。
 
-**所以务必显式设置 `PNPM_VERSION=11.7.0`。**
+## 三、⚠️ Worker 名称必须与 wrangler 配置一致
 
----
+官方原文（[Workers Builds 文档](https://developers.cloudflare.com/workers/ci-cd/builds/)）：
 
-## 不需要任何密钥
+> When connecting a repository to a Workers project, **the Worker name in the
+> Cloudflare dashboard must match the `name` in the Wrangler configuration file
+> in the specified root directory, or the build will fail.**
+
+`site/wrangler.jsonc` 里写的是 `"name": "hairdryerlab"`。
+
+- Dashboard 上的 Worker 名**就是** `hairdryerlab` → 无需处理
+- **不是**（如 `hairdryer-lab`、`hairdryerlab-site`）→ 二选一：
+  - 改 `site/wrangler.jsonc` 的 `name` 那一行（**推荐**，比在 Dashboard 改名安全）
+  - 或在 Dashboard 把 Worker 改名
+
+## 四、`wrangler.jsonc` 为什么必需
+
+`wrangler deploy` 默认要找一个 Worker 脚本（`main`）。本站是纯静态站点，没有 Worker
+脚本，必须用 `assets.directory` 指明静态文件位置。缺这个文件就报：
+
+```
+✘ [ERROR] Could not detect a directory containing static files (e.g. html, css and js)
+```
+
+配置内容：
+
+```jsonc
+{
+  "name": "hairdryerlab",
+  "compatibility_date": "2026-10-03",
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "404-page",
+    "html_handling": "auto-trailing-slash"
+  }
+}
+```
+
+`not_found_handling: "404-page"` 让未匹配路径返回我们自己的 `dist/404.html`；
+`html_handling: "auto-trailing-slash"` 保证 `/foo` 与 `/foo/` 都指向 `foo/index.html`。
+
+> 官方文档另提到可以用部署命令代替配置文件：
+> `npx wrangler deploy --assets ./dist`
+> 但配置文件的写法更明确，且能同时声明 404 与尾斜杠行为，故采用配置文件。
+
+## 五、不需要任何密钥
 
 联盟链接由 `pnpm affiliate:sync` **在本地**拉取，结果写入
-`site/src/data/affiliate-links.mjs` **并已入库**。因此 Pages 的构建环境
-**不需要配置任何 API 密钥** —— 这是刻意设计，避免凭据进入 CI。
+`site/src/data/affiliate-links.mjs` **并已入库**。因此构建环境**不需要配置
+任何 API 密钥** —— 这是刻意设计，避免凭据进入 CI。
 
-改动联盟链接后：本地重跑 `pnpm affiliate:sync`，提交生成的文件即可。
+改动联盟链接后：本地重跑 `pnpm affiliate:sync`，提交生成的文件。
 
 ---
 
 ## 成功标志
 
-构建日志里应出现：
+构建日志应出现：
 
 ```
 Detected the following tools from environment: nodejs@22.x, pnpm@11.7.0
@@ -82,7 +119,7 @@ Detected the following tools from environment: nodejs@22.x, pnpm@11.7.0
 Complete!
 ```
 
-产物应有 63 个文件，包含 `index.html`、`404.html`、`robots.txt`、`sitemap-index.xml`、
+产物 110 个文件，含 `index.html`、`404.html`、`robots.txt`、`sitemap-index.xml`、
 `llms.txt`、`_astro/`、`fonts/`。
 
 ---
@@ -103,66 +140,20 @@ https://hairdryerlab.ca/llms.txt
 
 ## 绑定域名
 
-1. 域名 `hairdryerlab.ca` 的 DNS 必须托管在 Cloudflare（先在 Cloudflare 添加站点、
-   把 nameserver 改过去）
-2. Pages 项目 → **Custom domains** → 添加 `hairdryerlab.ca` 与 `www.hairdryerlab.ca`
+1. 域名 `hairdryerlab.ca` 的 DNS 必须托管在 Cloudflare（先添加站点、改 nameserver）
+2. Worker → **Settings → Domains & Routes** → **Add custom domain** →
+   `hairdryerlab.ca`，再加 `www.hairdryerlab.ca`
 3. `www` 建议用 **Redirect Rule 301** 指到裸域，避免两个 host 各自被 Google 索引
 
 ---
 
-## 排查顺序
+## 排查顺序（按这个顺序看，别跳）
 
 1. **日志里 `Detected the following tools from environment:` 是否非空**
    —— 空 = Root directory 没设成 `site`
 2. **日志里有没有 `pnpm build` 这一步** —— 没有 = Build command 没填
-3. **`PNPM_VERSION` 是否为 `11.7.0`** —— 不设会用旧版 pnpm，报模块找不到
-4. **Build output directory 是否为 `dist`**
-
----
-
-## 为什么不用 Workers
-
-两次 Workers 部署均失败，日志：
-
-```
-Cloning repository...
-No build output detected to cache. Skipping.
-No dependencies detected to cache. Skipping.
-Detected the following tools from environment:        ← 空的
-Executing user deploy command: npx wrangler deploy
-✘ Could not detect a directory containing static files
-```
-
-三个原因：
-
-| # | 原因 | 说明 |
-|---|---|---|
-| 1 | Root directory 未指向 `site` | 工具检测为空即为证据 |
-| 2 | Build command 为空 | 从未执行 `pnpm build`，不存在 `dist/` |
-| 3 | 缺 Wrangler 配置 | `wrangler deploy` 默认找 Worker 脚本，纯静态站必须声明 `assets.directory` |
-
-第 3 项的配置为（若日后要回到 Workers，把这段存成 `site/wrangler.jsonc`）：
-
-```jsonc
-{
-  "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "hairdryerlab",
-  "compatibility_date": "2026-10-03",
-  "assets": {
-    "directory": "./dist",
-    "not_found_handling": "404-page",
-    "html_handling": "auto-trailing-slash"
-  }
-}
-```
-
-另有两条 Workers 特有的坑，Pages 不存在：
-
-- **Worker 名称必须与 `wrangler.jsonc` 的 `name` 一致**，否则构建失败（官方原文：
-  "the Worker name in the Cloudflare dashboard must match the `name` in the Wrangler
-  configuration file in the specified root directory, or the build will fail."）
-- Workers 的构建变量在 **Settings → Build → Build Variables and Secrets**，
-  而不是 **Settings → Variables & Secrets**（后者是运行时变量，构建阶段读不到）
+3. **`PNPM_VERSION` 是否为 `11.7.0`**
+4. **Worker 名是否等于 `wrangler.jsonc` 的 `name`**
 
 ---
 

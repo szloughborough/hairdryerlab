@@ -1,0 +1,31 @@
+{
+  // Cloudflare Workers 静态资源部署配置。
+  //
+  // ── 为什么必须有这个文件 ────────────────────────────────────────────────
+  // Workers 的 `wrangler deploy` 默认要找一个 Worker 脚本（main）。本站是纯静态
+  // 站点，没有 Worker 脚本，必须用 assets.directory 告诉它静态文件在哪。缺这个
+  // 文件时部署直接失败：
+  //     ✘ Could not detect a directory containing static files
+  //
+  // ── ⚠️ name 必须与 Cloudflare 上的 Worker 名完全一致 ────────────────────
+  // 官方原文（Workers Builds 文档）：
+  //   When connecting a repository to a Workers project, the Worker name in the
+  //   Cloudflare dashboard must match the `name` in the Wrangler configuration
+  //   file in the specified root directory, or the build will fail.
+  //
+  // 若 Dashboard 上的 Worker 名不是 hairdryerlab，请改这一行（改这里比在
+  // Dashboard 改名安全）。
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "hairdryerlab",
+  "compatibility_date": "2026-10-03",
+  "assets": {
+    // 构建产物目录（相对本文件所在目录，即 site/）
+    "directory": "./dist",
+    // 未匹配到文件时返回最近的 404.html 并带 404 状态码。
+    // 本站有 site/src/pages/404.astro，构建为 dist/404.html。
+    "not_found_handling": "404-page",
+    // 目录式页面的尾斜杠处理。本站产出 /foo/index.html 形式，
+    // auto-trailing-slash 让 /foo 与 /foo/ 都正确指向该文件。
+    "html_handling": "auto-trailing-slash"
+  }
+}
