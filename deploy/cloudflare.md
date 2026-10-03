@@ -1,110 +1,100 @@
 # Cloudflare 部署说明
 
-本站是**纯静态站点**（`astro build` 产出 `dist/`，110 个文件 / 2.2 MB，无 Worker 脚本）。
+本站是**纯静态站点**（`astro build` 产出 `site/dist`，63 个文件）。
 
-**结论：走 Cloudflare Workers 路径。**
+## 结论：不需要任何 Cloudflare 构建设置
 
-> 原计划用 Cloudflare Pages，但 **Pages 已从创建流程中移除** —— Dashboard 里点
-> `Create application` 不再有 Pages 标签，直接进入 Connect to Git（即 Workers）。
-> Pages 文档仍在，入口已合并。下面的配置按 Workers 写。
+**直接 `Retry deployment` 即可。** 不需要 Root directory，不需要 Build command，
+不需要构建变量。
 
----
+### 为什么可行
 
-## 一、Dashboard：项目设置
-
-进入 Worker → **Settings → Build**（注意是 **Build**，不是「Builds」）
-
-| 字段 | 设为 | 说明 |
-|---|---|---|
-| **Root directory** | `site` | 官方定义：「defines where the build command will be run」 |
-| **Build command** | `pnpm build` | 官方标注 Optional，但静态站必需 |
-| **Deploy command** | `npx wrangler deploy` | 保持默认 |
-| Git branch | `main` | |
-
-> ⚠️ **Root directory 是最容易漏的一项。** 仓库根目录没有 `package.json`（它在 `site/`）。
-> 留空的后果：Cloudflare 检测不到 Node/pnpm，日志里这一行为空 ——
-> `Detected the following tools from environment:`
-> 然后直接跳到 `wrangler deploy` 并失败。**这一行是否非空，是最快的诊断依据。**
-
-## 二、Dashboard：构建变量
-
-**Settings → Build → Build Variables and Secrets**
-
-> ⚠️ 是 **Settings → Build** 里的这一项，**不是** Settings → Variables & Secrets
-> （后者是运行时变量，构建阶段读不到）。
-
-| 变量 | 值 | 必要性 |
-|---|---|---|
-| `PNPM_VERSION` | `11.7.0` | **必须**，见下 |
-| `NODE_VERSION` | `22` | 可选（`site/.nvmrc` 已写 22） |
-
-### 为什么 `PNPM_VERSION` 必须设
-
-Workers 构建镜像的**默认 pnpm 是 10.11.1**（官方 build image 文档列出的默认版本）。
-而本项目的 `site/pnpm-workspace.yaml` 用的是 **pnpm 11 的配置语法**：
-
-```yaml
-nodeLinker: hoisted
-allowBuilds: { esbuild: true, sharp: true }
-verifyDepsBeforeRun: false
-```
-
-pnpm 10 不认识 `allowBuilds` / `verifyDepsBeforeRun`。版本不匹配会导致依赖布局不正确，
-构建报 `Cannot find module 'html-escaper'` —— 这个错误本项目已经踩过一次，
-详见 `site/pnpm-workspace.yaml` 顶部说明。
-
-## 三、⚠️ Worker 名称必须与 wrangler 配置一致
-
-官方原文（[Workers Builds 文档](https://developers.cloudflare.com/workers/ci-cd/builds/)）：
-
-> When connecting a repository to a Workers project, **the Worker name in the
-> Cloudflare dashboard must match the `name` in the Wrangler configuration file
-> in the specified root directory, or the build will fail.**
-
-`site/wrangler.jsonc` 里写的是 `"name": "hairdryerlab"`。
-
-- Dashboard 上的 Worker 名**就是** `hairdryerlab` → 无需处理
-- **不是**（如 `hairdryer-lab`、`hairdryerlab-site`）→ 二选一：
-  - 改 `site/wrangler.jsonc` 的 `name` 那一行（**推荐**，比在 Dashboard 改名安全）
-  - 或在 Dashboard 把 Worker 改名
-
-## 四、`wrangler.jsonc` 为什么必需
-
-`wrangler deploy` 默认要找一个 Worker 脚本（`main`）。本站是纯静态站点，没有 Worker
-脚本，必须用 `assets.directory` 指明静态文件位置。缺这个文件就报：
-
-```
-✘ [ERROR] Could not detect a directory containing static files (e.g. html, css and js)
-```
-
-配置内容：
+Cloudflare Workers Builds 的默认行为是：在仓库根目录执行 `npx wrangler deploy`。
+本项目在**仓库根目录**放了一个 `wrangler.jsonc`：
 
 ```jsonc
 {
   "name": "hairdryerlab",
   "compatibility_date": "2026-10-03",
   "assets": {
-    "directory": "./dist",
+    "directory": "./site/dist",        // ← 已提交的构建产物
     "not_found_handling": "404-page",
     "html_handling": "auto-trailing-slash"
   }
 }
 ```
 
-`not_found_handling: "404-page"` 让未匹配路径返回我们自己的 `dist/404.html`；
-`html_handling: "auto-trailing-slash"` 保证 `/foo` 与 `/foo/` 都指向 `foo/index.html`。
+于是默认的部署命令就能找到静态文件并上传。**构建产物 `site/dist` 已提交到仓库**
+（63 个文件：45 个 HTML、1 个 CSS、4 个 woff2、7 个 png、2 个 xml、2 个 txt、
+manifest、ico）。
 
-> 官方文档另提到可以用部署命令代替配置文件：
-> `npx wrangler deploy --assets ./dist`
-> 但配置文件的写法更明确，且能同时声明 404 与尾斜杠行为，故采用配置文件。
+### 为什么走这条路
 
-## 五、不需要任何密钥
+Dashboard 里的构建设置（Root directory / Build command）在界面上不容易定位，
+导致连续三次部署失败，日志都是：
 
-联盟链接由 `pnpm affiliate:sync` **在本地**拉取，结果写入
-`site/src/data/affiliate-links.mjs` **并已入库**。因此构建环境**不需要配置
-任何 API 密钥** —— 这是刻意设计，避免凭据进入 CI。
+```
+No build output detected to cache. Skipping.
+Detected the following tools from environment:        ← 空的
+Executing user deploy command: npx wrangler deploy
+✘ Could not detect a directory containing static files
+```
 
-改动联盟链接后：本地重跑 `pnpm affiliate:sync`，提交生成的文件。
+把产物直接交给 wrangler，就把对「能不能找到那三个输入框」的依赖彻底去掉了。
+
+---
+
+## ⚠️ 唯一的硬性要求：Worker 名称必须匹配
+
+Cloudflare 官方原文：
+
+> the Worker name in the Cloudflare dashboard must match the `name` in the
+> Wrangler configuration file in the specified root directory, **or the build
+> will fail.**
+
+两个 `wrangler.jsonc` 里写的都是 `"name": "hairdryerlab"`：
+
+| 文件 | 何时生效 | assets 指向 |
+|---|---|---|
+| `wrangler.jsonc`（仓库根） | **未设 Root directory 时**（当前情况） | `./site/dist` |
+| `site/wrangler.jsonc` | 若日后设 Root directory = `site` | `./dist` |
+
+两者一致，所以**两种情况都能工作**。
+
+**若你 Dashboard 上的 Worker 名不是 `hairdryerlab`** → 改这两个文件里的 `name`
+（比在 Dashboard 改名安全，不会影响已有部署）。
+
+---
+
+## 改内容的流程（重要）
+
+因为产物是提交进仓库的，**改完内容必须重新构建并提交**，否则线上还是旧版本。
+
+已提供一条命令：
+
+```bash
+node _scripts/deploy_prepare.mjs
+git commit -m "content: ..."
+git push
+```
+
+它做三件事：
+1. 调 `_scripts/sync_content.py` 把 `deliverables/drafts/` 同步到 `site/src/content/`
+2. 构建（`pnpm build`，找不到 pnpm 时依次回退到 npx / 直接调 astro）
+3. `git add -f site/dist` 并暂存其余改动
+
+> **同步规则只有一处真源：`_scripts/sync_content.py`。**
+> 曾经在 JS 里重新实现过一遍，漏了 5 条规则（跳过 `draft:true`、按 `slug` 命名、
+> 删除正文 H1、把 HTML 注释转成 MDX 注释写法、先清空旧文件），结果把一篇含 HTML
+> 注释的草稿同步进站点，构建报 `[@mdx-js/rollup] Unexpected character !`。
+> 现在脚本直接调用原脚本，**找不到 Python 就大声失败，绝不静默降级**。
+>
+> 需要 Python。受限环境可用 `HDL_PYTHON` 指定解释器路径。
+
+### 如果忘了重新构建
+
+线上会停留在上一个已提交的版本。**不会白屏，也不会报错** —— 只是内容旧。
+改完内容后先跑一次 `deploy_prepare.mjs` 是个好习惯。
 
 ---
 
@@ -113,14 +103,14 @@ pnpm 10 不认识 `allowBuilds` / `verifyDepsBeforeRun`。版本不匹配会导�
 构建日志应出现：
 
 ```
-Detected the following tools from environment: nodejs@22.x, pnpm@11.7.0
-...
-45 page(s) built
-Complete!
+npx wrangler deploy
+Total Upload: ... KiB
+Uploaded hairdryerlab (x.xx sec)
+Deployed hairdryerlab triggers ...
 ```
 
-产物 110 个文件，含 `index.html`、`404.html`、`robots.txt`、`sitemap-index.xml`、
-`llms.txt`、`_astro/`、`fonts/`。
+注意：**这条路不依赖 `pnpm build`**，所以日志里**不会**有 `45 page(s) built`。
+看到 `Uploaded hairdryerlab` 就是成功了。
 
 ---
 
@@ -132,7 +122,7 @@ https://hairdryerlab.ca/sitemap-index.xml
 https://hairdryerlab.ca/llms.txt
 ```
 
-`llms.txt` 由 `site/src/pages/llms.txt.ts` 在**构建时**从内容集合生成，列出 46 个真实
+`llms.txt` 由 `site/src/pages/llms.txt.ts` 在构建时从内容集合生成，列出 46 个真实
 页面链接供 AI 爬虫使用。它原本是手写文件、URL 停留在旧分类法，上线后会让爬虫拿到
 一整页 404，现已改为生成式。
 
@@ -147,30 +137,46 @@ https://hairdryerlab.ca/llms.txt
 
 ---
 
-## 排查顺序（按这个顺序看，别跳）
+## 若日后想改回「Cloudflare 构建」
 
-1. **日志里 `Detected the following tools from environment:` 是否非空**
-   —— 空 = Root directory 没设成 `site`
-2. **日志里有没有 `pnpm build` 这一步** —— 没有 = Build command 没填
-3. **`PNPM_VERSION` 是否为 `11.7.0`**
-4. **Worker 名是否等于 `wrangler.jsonc` 的 `name`**
+好处是仓库不必带产物。需要做两件事：
+
+1. **Settings → Build**（菜单名可能是 `Build` 或 `Builds`，Cloudflare 自己的文档
+   两种写法都有）
+   - Root directory = `site`
+   - Build command = `pnpm build`
+2. **Settings → Build → Build Variables and Secrets**
+   （不是 Settings → Variables & Secrets，后者是运行时变量）
+   - `PNPM_VERSION` = `11.7.0` —— **必需**。构建镜像默认 pnpm 是 10.11.1，
+     而本项目 `pnpm-workspace.yaml` 用的是 pnpm 11 语法（`allowBuilds`、
+     `verifyDepsBeforeRun`），版本不匹配会报
+     `Cannot find module 'html-escaper'`
+   - `NODE_VERSION` = `22`
+
+然后从 `.gitignore` 恢复 `dist/` 的忽略规则，并把 `site/dist` 移出版本控制。
 
 ---
 
-## 本地复现 Cloudflare 构建
+## 排查顺序
 
-Cloudflare 做的是「全新克隆 → 检测工具 → 安装 → 构建」。本地可完全复现：
+1. **Worker 名是否等于两个 `wrangler.jsonc` 里的 `name`** —— 这是现在唯一的硬性要求
+2. **日志里有没有 `Uploaded <worker-name>`**
+3. **日志里的错误是不是 `Could not detect a directory containing static files`**
+   —— 若是，检查根目录 `wrangler.jsonc` 是否存在、`assets.directory` 路径是否对
+4. **页面能打开但没样式** → `site/dist/_astro/*.css` 没提交，跑一次
+   `node _scripts/deploy_prepare.mjs`
+5. **页面内容旧** → 忘记重新构建并提交
+
+---
+
+## 本地复现
 
 ```bash
-git clone https://github.com/szloughborough/hairdryerlab.git _clonetest
-cd _clonetest/site
-pnpm install
-pnpm build          # 应输出 45 page(s) built / Complete!
+node _scripts/deploy_prepare.mjs     # 同步 + 构建 + 暂存
+cd site && pnpm build                # 只构建
 ```
 
-> **这一步不是可选的。** 本项目踩过一个只在干净环境才暴露的坑：`pnpm 10+` 不再从
+> **干净环境验证不可省。** 本项目踩过一个只在干净环境暴露的坑：`pnpm 10+` 不再从
 > `.npmrc` 读取项目级设置，导致全新安装的 `node_modules` 布局与本地不一致，构建报
 > `Cannot find module 'html-escaper'`。本地因为 `node_modules` 是旧版 pnpm 装的，
-> 一直没暴露。
->
-> 教训：**验证必须用干净克隆，不能用开发中的本地目录。**
+> 一直没暴露。修复见 `site/pnpm-workspace.yaml` 顶部说明。

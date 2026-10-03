@@ -80,41 +80,29 @@ python _scripts/launch_audit.py         # 上线就绪审计
 
 改动联盟链接后需要本地重跑 `pnpm affiliate:sync` 并提交生成的文件。
 
-### 项目设置
+### 项目设置：什么都不用填
 
-> **Pages 已从 Cloudflare 创建流程中移除** —— `Create application` 不再有 Pages 标签，
-> 直接进入 Connect to Git（即 Workers）。因此按 **Workers** 配置。
+**直接 Retry deployment 即可。** 不需要 Root directory、不需要 Build command、
+不需要构建变量。
 
-**Settings → Build**（注意是 `Build`，不是「Builds」）：
+原因：仓库**根目录**放了 `wrangler.jsonc`，声明 `assets.directory = ./site/dist`，
+而 **`site/dist` 已提交到仓库**。Cloudflare 的默认部署命令 `npx wrangler deploy`
+在仓库根执行时会读到它，直接上传已构建好的静态文件。
 
-| 字段 | 值 |
-|---|---|
-| **Root directory** | **`site`** |
-| **Build command** | `pnpm build` |
-| Deploy command | `npx wrangler deploy`（默认，不改） |
+> 详情、取舍与排错见 **[deploy/cloudflare.md](deploy/cloudflare.md)**。
 
-**Settings → Build → Build Variables and Secrets：**
+> ⚠️ **唯一的硬性要求**：Worker 名必须等于两个 `wrangler.jsonc` 里的 `name`
+> （当前 `hairdryerlab`）。Cloudflare 官方原文：the Worker name in the dashboard
+> must match the `name` in the Wrangler configuration file, **or the build will fail**。
 
-> ⚠️ 是 **Settings → Build** 里的这一项，不是 Settings → Variables & Secrets
-> （后者是运行时变量，构建阶段读不到）。
+### 改内容的流程
 
-| 变量 | 值 | 必要性 |
-|---|---|---|
-| `PNPM_VERSION` | `11.7.0` | **必需**，见下 |
-| `NODE_VERSION` | `22` | 可选（`site/.nvmrc` 已写 `22`） |
+因为产物已提交，**改完内容必须重新构建并提交**，否则线上是旧版本：
 
-> ⚠️ **`PNPM_VERSION` 不能省。** Workers 构建镜像默认 pnpm 是 **10.11.1**，而本项目
-> `site/pnpm-workspace.yaml` 用的是 **pnpm 11 的配置语法**（`allowBuilds` /
-> `verifyDepsBeforeRun`）。pnpm 10 不认识这些键，构建会报
-> `Cannot find module 'html-escaper'`。
-
-> ⚠️ **Root directory 必须填 `site`。** 仓库根目录没有 `package.json`（它在 `site/`）。
-> 留空会让 Cloudflare 检测不到 Node/pnpm —— 日志里
-> `Detected the following tools from environment:` 会**空着**。这是最快的诊断依据。
-
-> ⚠️ **Worker 名必须等于 `site/wrangler.jsonc` 的 `name`（当前 `hairdryerlab`）**，
-> 否则构建失败。这是 Cloudflare 的硬性要求，不是建议。
-
+```bash
+node _scripts/deploy_prepare.mjs     # 同步草稿 + 构建 + 暂存产物
+git commit -m "content: ..." && git push
+```
 ### 绑定域名
 
 1. 在 Cloudflare 添加 `hairdryerlab.ca` 站点（若尚未添加），让 DNS 托管在 Cloudflare
