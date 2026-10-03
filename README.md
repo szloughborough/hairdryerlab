@@ -81,37 +81,45 @@ python _scripts/launch_audit.py         # 上线就绪审计
 
 ### 项目设置
 
-**Workers & Pages → Create application → Pages → Connect to Git**，选本仓库，按下表填：
+> **Pages 已从 Cloudflare 创建流程中移除** —— `Create application` 不再有 Pages 标签，
+> 直接进入 Connect to Git（即 Workers）。因此按 **Workers** 配置。
 
-| 配置项 | 值 |
+**Settings → Build**（注意是 `Build`，不是「Builds」）：
+
+| 字段 | 值 |
 |---|---|
-| Production branch | `main` |
-| Framework preset | `Astro` |
 | **Root directory** | **`site`** |
-| Build command | `pnpm build` |
-| Build output directory | `dist` |
+| **Build command** | `pnpm build` |
+| Deploy command | `npx wrangler deploy`（默认，不改） |
 
-**Settings → Environment variables：**
+**Settings → Build → Build Variables and Secrets：**
+
+> ⚠️ 是 **Settings → Build** 里的这一项，不是 Settings → Variables & Secrets
+> （后者是运行时变量，构建阶段读不到）。
 
 | 变量 | 值 | 必要性 |
 |---|---|---|
 | `PNPM_VERSION` | `11.7.0` | **必需**，见下 |
 | `NODE_VERSION` | `22` | 可选（`site/.nvmrc` 已写 `22`） |
 
-> ⚠️ **`PNPM_VERSION` 不能省。** Cloudflare Pages v3 构建镜像的官方限制明确写着
-> 不检测 `pnpm-lock.yaml` 的版本、也不从 `package.json` 的 `engines` 推断包管理器，
-> 所以会用镜像自带的旧版 pnpm。而本项目 `site/pnpm-workspace.yaml` 用的是
-> **pnpm 11 的配置语法**（`allowBuilds` / `verifyDepsBeforeRun`），版本不匹配会导致
-> 构建报 `Cannot find module 'html-escaper'`。
+> ⚠️ **`PNPM_VERSION` 不能省。** Workers 构建镜像默认 pnpm 是 **10.11.1**，而本项目
+> `site/pnpm-workspace.yaml` 用的是 **pnpm 11 的配置语法**（`allowBuilds` /
+> `verifyDepsBeforeRun`）。pnpm 10 不认识这些键，构建会报
+> `Cannot find module 'html-escaper'`。
 
 > ⚠️ **Root directory 必须填 `site`。** 仓库根目录没有 `package.json`（它在 `site/`）。
-> 留空会让 Cloudflare 检测不到 Node/pnpm，构建直接失败。
+> 留空会让 Cloudflare 检测不到 Node/pnpm —— 日志里
+> `Detected the following tools from environment:` 会**空着**。这是最快的诊断依据。
+
+> ⚠️ **Worker 名必须等于 `site/wrangler.jsonc` 的 `name`（当前 `hairdryerlab`）**，
+> 否则构建失败。这是 Cloudflare 的硬性要求，不是建议。
 
 ### 绑定域名
 
 1. 在 Cloudflare 添加 `hairdryerlab.ca` 站点（若尚未添加），让 DNS 托管在 Cloudflare
-2. Pages 项目 → Custom domains → 添加 `hairdryerlab.ca` 与 `www.hairdryerlab.ca`
-3. `www` 建议用 Cloudflare 的 Redirect Rule 301 到裸域，避免两个 host 各自被索引
+2. Worker → **Settings → Domains & Routes → Add custom domain** →
+   `hairdryerlab.ca`，再加 `www.hairdryerlab.ca`
+3. `www` 建议用 Cloudflare 的 **Redirect Rule 301** 到裸域，避免两个 host 各自被索引
 
 ### 部署后要做的三件事
 
