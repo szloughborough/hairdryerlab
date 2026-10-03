@@ -1,6 +1,16 @@
 ---
-/** §47 Badge System —— 克制、小、不游戏化 */
-interface Props { kind?: 'tested' | 'value' | 'updated' | 'travel' | 'curly'; text?: string }
+/**
+ * §47 Badge System —— 克制、小、不游戏化
+ *
+ * ⚠️ kind="tested" 会渲染出「Tested」字样，**只有在真的完成台架实测之后
+ * 才能使用**。此前全站 43 个页面把它当作默认装饰徽章挂在标题下，而本站
+ * 尚未完成任何台架实测 —— 那是对我们自己工作的虚假声称。
+ * 现在由 Article.astro 判断 tested 字段是否为真实日期，不是就不渲染。
+ */
+interface Props {
+  kind?: 'tested' | 'value' | 'updated' | 'travel' | 'curly' | 'data';
+  text?: string;
+}
 const { kind = 'tested', text } = Astro.props;
 const MAP = {
   tested: 'Tested',
@@ -8,11 +18,14 @@ const MAP = {
   updated: 'Updated',
   travel: 'Best for Travel',
   curly: 'Best for Curly Hair',
+  data: 'Figures checked',
 } as const;
 const label = text ?? MAP[kind];
-const cls = kind === 'tested' ? 'badge badge--tested'
+const cls =
+  kind === 'tested' ? 'badge badge--tested'
   : kind === 'value' ? 'badge badge--value'
   : kind === 'updated' ? 'badge badge--updated'
+  : kind === 'data' ? 'badge badge--data'
   : 'badge';
 ---
 <span class={cls}>{label}</span>

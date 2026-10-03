@@ -1,12 +1,19 @@
 ---
-/** 自动目录：从 H2 生成，长文必备（榜单/指南页） */
+/**
+ * 自动目录：从 H2 生成，长文必备（榜单/指南页）
+ *
+ * ⚠️ 标题用 <p> 而不是 <h2>。此前这里是 <h2>On this page</h2>，被 CSS 渲染成
+ * 13px 小标签 —— 既违反 §17（H2 应 34px），又把「On this page」这个非章节标题
+ * 塞进了每篇文章的文档大纲，与正文自己的 h2 抢层级。
+ * 它是这个导航区块的标签，不是文档章节，因此用 <p> + aria-labelledby 表达。
+ */
 interface Props { headings: { depth: number; slug: string; text: string }[] }
 const { headings } = Astro.props;
 const h2 = headings.filter((h) => h.depth === 2);
 ---
 {h2.length >= 3 && (
-  <aside class="toc">
-    <h2>On this page</h2>
+  <aside class="toc" aria-labelledby="toc-title">
+    <p class="toc__title" id="toc-title">On this page</p>
     <ol>
       {h2.map((h) => (
         <li><a href={`#${h.slug}`}>{h.text}</a></li>

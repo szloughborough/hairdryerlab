@@ -18,22 +18,28 @@ const year = new Date().getFullYear();
       <p class="footer-brandline">{FOOTER_CANADA_LINE}</p>
     </div>
 
-    <div>
-      <h3>Navigation</h3>
+    <!--
+      页脚分栏标签用 <p> 而不是 <h3>。
+      此前是三个 <h3> 被 CSS 渲染成 12px —— 同样违反 §17（H3 应 24px），
+      而且页脚链接组不是文档章节。导航组改用 <nav aria-labelledby> 提供
+      无障碍名称；可见文字仍由 <p class="footer-col__title"> 承担。
+    -->
+    <nav class="footer-col" aria-labelledby="footer-nav-title">
+      <p class="footer-col__title" id="footer-nav-title">Navigation</p>
       <ul>
         {FOOTER_MAIN.map((l) => <li><a href={l.href}>{l.label}</a></li>)}
       </ul>
-    </div>
+    </nav>
 
-    <div>
-      <h3>Company</h3>
+    <nav class="footer-col" aria-labelledby="footer-company-title">
+      <p class="footer-col__title" id="footer-company-title">Company</p>
       <ul>
         {FOOTER_COMPANY.map((l) => <li><a href={l.href}>{l.label}</a></li>)}
       </ul>
-    </div>
+    </nav>
 
-    <div>
-      <h3>Disclosure</h3>
+    <div class="footer-col">
+      <p class="footer-col__title">Disclosure</p>
       <p class="footer-brandline">
         Hair Dryer Lab may earn a commission when you buy through our links.
         This doesn't affect how we test or review products.

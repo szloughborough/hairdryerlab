@@ -21,7 +21,8 @@ import RelatedContent from '../components/RelatedContent.astro';
 import AuthorBox from '../components/AuthorBox.astro';
 import Newsletter from '../components/Newsletter.astro';
 import TestedBadge from '../components/TestedBadge.astro';
-import { PILLAR, SITE_NAME } from '../data/site';
+import { PILLAR } from '../data/site';
+import { PRICE_CHECKED } from '../data/products';
 
 interface Props {
   entry: any;
@@ -62,11 +63,21 @@ const DEFAULT_LAB_METRICS = [
   { label: 'Power (W)', value: 'Not yet tested' },
 ];
 
-// §61 编辑元数据
-const metaLine = [
-  d.tested ? `Tested ${d.tested}` : null,
-  d.source ? `Product source: ${d.source}` : null,
-].filter(Boolean);
+/**
+ * §61 编辑元数据。
+ *
+ * 只有 `tested` 是**真实测试日期**时才展示「Tested」徽章。当前 25 篇的该字段
+ * 值是 "Not yet bench-tested"，23 篇为空 —— 两种情况都不该渲染「Tested」。
+ *
+ * 此前这里无条件渲染 <TestedBadge kind="tested" />，导致全站 43 个页面
+ * （含 About、隐私政策、联盟披露）都挂着一个「Tested」徽章，而本站尚未完成
+ * 任何台架实测。那是对我们自己工作的虚假声称。
+ *
+ * 同时移除原来的 `Tested by {SITE_NAME}. Tested Not yet bench-tested ·
+ * Product source: Analysis of 8,261 verified Amazon.ca reviews` —— 那句话既自相
+ * 矛盾，又把研究方法错标成了商品来源。署名已由 AuthorBox 承担。
+ */
+const hasRealTestDate = Boolean(d.tested) && !/^not yet/i.test(String(d.tested));
 ---
 <Base
   title={d.title}
@@ -100,20 +111,29 @@ const metaLine = [
 
       {/* §42(3) 一行结论 + 徽章 */}
       {d.verdict && <p class="lede">{d.verdict}</p>}
+
+      {/*
+        徽章行：只放**事实性**状态。
+        - Figures checked <date>：Amazon.ca 价格/评分/卖家结构的核对日期（§48 / §61）
+        - Tested <date>：仅当 hasRealTestDate 为真时出现（当前无一篇文章满足）
+        - Updated <date>：内容更新日期
+      */}
       <p class="meta-line">
-        <TestedBadge kind="tested" />
+        <TestedBadge kind="data" text={`Figures checked ${PRICE_CHECKED}`} />
+        {hasRealTestDate && <> <TestedBadge kind="tested" text={`Tested ${d.tested}`} /></>}
         {d.updated && <> <TestedBadge kind="updated" text={`Updated ${d.updated}`} /></>}
       </p>
 
       {/* §42(4) 联盟披露（§37 标准文案） */}
       {isCommercial && <AffiliateDisclosure />}
 
-      {/* §61 编辑元数据 */}
-      {metaLine.length > 0 && (
-        <p class="meta-line">
-          Tested by {SITE_NAME}. {metaLine.join(' · ')}
-        </p>
-      )}
+      {/*
+        研究方法单列一句。此前它被拼成
+        「Tested by Hair Dryer Lab. Tested Not yet bench-tested ·
+          Product source: Analysis of 8,261 verified Amazon.ca reviews」
+        —— 自相矛盾，且把研究方法错标为商品来源。署名现由页尾 AuthorBox 承担。
+      */}
+      {d.source && <p class="meta-line meta-line--method">{d.source}</p>}
 
       {/* §42(5) Product Hero —— 首选产品块（§41：首屏内要看到产品名与价格 CTA） */}
       {isCommercial && d.products?.length ? (

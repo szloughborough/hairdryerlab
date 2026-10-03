@@ -188,9 +188,12 @@ blockquote p:last-child { margin-bottom: 0; }
   border-radius: var(--hdl-radius-md); padding: var(--s4) var(--s5);
   margin: var(--s5) 0 var(--s6);
 }
-.toc h2 {
-  font-size: 13px; margin: 0 0 var(--s3); text-transform: uppercase;
-  letter-spacing: 0.08em; color: var(--hdl-text-secondary); font-weight: 700;
+/* 这里曾经匹配 .toc h2，把「On this page」这个真 <h2> 渲染成 13px。
+   它已改为 <p class="toc__title"> —— 是导航区块的标签，不是文档章节。 */
+.toc__title {
+  font-family: 'Manrope', sans-serif;
+  font-size: 12px; margin: 0 0 var(--s3); text-transform: uppercase;
+  letter-spacing: 0.1em; color: var(--hdl-text-secondary); font-weight: 700;
 }
 .toc ol { margin: 0; padding-left: var(--s5); font-size: 15px; }
 .toc li { margin: var(--s1) 0; }
@@ -266,7 +269,8 @@ blockquote p:last-child { margin-bottom: 0; }
    §70 Pros / Cons（编辑式，不用大色块）
    ============================================================ */
 .proscons { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s5); margin: var(--s5) 0; }
-.proscons h3 { margin-top: 0; font-size: 18px; }
+/* §17 H3 = 24px。原本 18px，低于规范。 */
+.proscons h3 { margin-top: 0; font-size: 24px; }
 .proscons ul { list-style: none; padding: 0; margin: 0; }
 .proscons li { padding-left: var(--s5); position: relative; margin: var(--s2) 0; font-size: 16px; }
 .proscons--liked li::before {
@@ -293,6 +297,9 @@ blockquote p:last-child { margin-bottom: 0; }
 .badge--tested { background: var(--hdl-ice); color: var(--hdl-navy); border-color: #C9DDE7; }
 .badge--value  { background: var(--hdl-ice); color: var(--hdl-navy); border-color: #C9DDE7; }
 .badge--updated { background: var(--hdl-white); }
+/* 数据核对日期徽章。替代此前全站 43 个页面上的「Tested」徽章 ——
+   本站尚未完成任何台架实测，那个徽章是虚假声称。 */
+.badge--data { background: var(--hdl-white); color: var(--hdl-navy); border-color: var(--hdl-border); }
 
 /* ============================================================
    §48 Price Box
@@ -331,11 +338,15 @@ blockquote p:last-child { margin-bottom: 0; }
 
 /* ---------------- 产品图卡 §69 ---------------- */
 .picks { margin: var(--s6) 0 var(--s4); }
+/* §17 H2 = 34px。这里曾是 13px 大写标签 —— 一个真正的 <h2> 被渲染成
+   小标签，与首页改版前同一类层级塌陷问题。 */
 .picks > h2 {
-  font-size: 13px; text-transform: uppercase; letter-spacing: 0.1em;
-  color: var(--hdl-text-secondary); margin: 0 0 var(--s4); font-weight: 700;
+  font-size: 34px; line-height: 1.2; letter-spacing: -0.015em;
+  color: var(--hdl-navy); margin: 0 0 var(--s5); font-weight: 700;
 }
-.picks-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--s4); }
+/* 与首页 .models 一致改为 3 列。5 列时每张卡仅约 227px，标题只能压到 14px，
+   且 6 个产品的页面会在第二行留下孤卡。 */
+.picks-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s4); }
 .pick-card {
   border: 1px solid var(--hdl-border); border-radius: var(--hdl-radius-md);
   text-decoration: none; color: inherit; background: var(--hdl-white);
@@ -351,9 +362,10 @@ blockquote p:last-child { margin-bottom: 0; }
 }
 .pick-card-media img { width: 100%; height: 100%; object-fit: contain; }
 .pick-card-body { padding: var(--s3); display: flex; flex-direction: column; gap: var(--s1); }
-.pick-card-body strong { font-family: 'Manrope', sans-serif; font-size: 14px; line-height: 1.3; color: var(--hdl-navy); }
-@media (max-width: 900px) { .picks-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-@media (max-width: 560px) { .picks-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+/* 3 列布局后卡片标题有空间了；14px 在 227px 卡里勉强，在 390px 卡里过小。 */
+.pick-card-body strong { font-family: 'Manrope', sans-serif; font-size: 20px; line-height: 1.25; color: var(--hdl-navy); }
+@media (max-width: 900px) { .picks-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 560px) { .picks-grid { grid-template-columns: 1fr; } }
 
 /* 单个产品卡（正文内） */
 .pick {
@@ -367,7 +379,8 @@ blockquote p:last-child { margin-bottom: 0; }
   display: flex; align-items: center; justify-content: center;
 }
 .pick-media img { width: 100%; height: 100%; object-fit: contain; }
-.pick-body h3 { margin: 0 0 var(--s1); font-size: 20px; }
+/* §17 H3 = 24px。原本 20px，低于规范。 */
+.pick-body h3 { margin: 0 0 var(--s1); font-size: 24px; }
 .pick-meta { font-size: 14px; color: var(--hdl-text-secondary); margin: 0 0 var(--s3); }
 @media (max-width: 560px) {
   .pick { grid-template-columns: 92px 1fr; gap: var(--s3); }
@@ -415,7 +428,10 @@ blockquote p:last-child { margin-bottom: 0; }
   gap: var(--s6); max-width: var(--hdl-content-width);
   margin: 0 auto; padding: 0 var(--s5);
 }
-.footer-cols h3 {
+/* 这里曾经匹配 .footer-cols h3，把三个页脚 <h3> 渲染成 12px。
+   它们已改为 <p class="footer-col__title">，导航组用 <nav aria-labelledby>。 */
+.footer-col__title {
+  font-family: 'Manrope', sans-serif;
   font-size: 12px; text-transform: uppercase; letter-spacing: 0.1em;
   color: var(--hdl-text-secondary); margin: 0 0 var(--s3); font-weight: 700;
 }
@@ -446,17 +462,8 @@ blockquote p:last-child { margin-bottom: 0; }
   color: var(--hdl-text-secondary); font-weight: 700;
   margin: var(--s8) 0 var(--s4);
 }
-.pillar-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s5); margin: var(--s5) 0; }
-.pillar-card {
-  border: 1px solid var(--hdl-border); border-radius: var(--hdl-radius-md);
-  padding: var(--s5); text-decoration: none; color: inherit; background: var(--hdl-white);
-  display: block; transition: border-color 0.15s ease;
-}
-.pillar-card:hover { border-color: var(--hdl-navy); }
-.pillar-card h3 { font-size: 19px; margin: 0 0 var(--s2); }
-.pillar-card p { font-size: 15px; color: var(--hdl-text-secondary); margin: 0; }
-@media (max-width: 900px) { .pillar-grid { grid-template-columns: 1fr 1fr; } }
-@media (max-width: 560px) { .pillar-grid { grid-template-columns: 1fr; } }
+/* .pillar-grid / .pillar-card 已删除：首页改版后无任何页面引用，
+   实测产物中 0/45 页出现，属死 CSS。 */
 
 /* ---------------- 工具类 ---------------- */
 .muted { color: var(--hdl-text-secondary); }
@@ -601,9 +608,11 @@ blockquote p:last-child { margin-bottom: 0; }
 .related__item a { font-weight: 500; }
 
 /* ---- §55(19) Author Box ------------------------------------------------ */
+/* 与首页「How We Work」三栏统一：讲我们自己的内容用 2px navy 顶线，
+   卡片边框留给产品与数据，避免整页都是同一种盒子。 */
 .authorbox {
-  border: 1px solid var(--hdl-border); border-radius: var(--hdl-radius-md);
-  background: var(--hdl-white); padding: var(--s5);
+  border-top: 2px solid var(--hdl-navy);
+  padding: var(--s5) 0 0;
   margin: var(--s7) 0 0; font-size: 15px;
 }
 .authorbox__label {
