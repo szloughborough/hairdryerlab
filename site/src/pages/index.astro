@@ -1,0 +1,145 @@
+---
+/**
+ * 首页 —— 严格遵循品牌规范
+ * §25 Hero（指定 H1 / 副标题 / 描述 / 双 CTA）
+ * §26 Tested & Compared
+ * §27 Start With Your Hair
+ * §28 Start With What Matters
+ * §75 视觉优先级：信任 > 专业 > 测试 > 按需导航 > 商业 CTA
+ */
+import Base from '../layouts/Base.astro';
+import JsonLd from '../components/JsonLd.astro';
+import TestedBadge from '../components/TestedBadge.astro';
+import {
+  SITE_URL, SITE_NAME, BRAND_STATEMENT, SITE_DESCRIPTION, SITE_META_DESCRIPTION,
+} from '../data/site';
+import { approxPrice, PRICE_NOTE } from '../data/products';
+
+/** §27 按发质 —— 具体发质指南撰写中，此处先指向栏目页 */
+const HAIR_TYPES_SUMMARY = 'Curly · Fine · Thick · Frizzy';
+
+/** §28 按需求 —— 对应 SEO 集群 */
+const NEEDS_SUMMARY =
+  'Fast drying · Quiet · Lightweight · Diffuser · Travel · Under C$150 · Premium · Dyson alternatives';
+
+/** §26 Tested & Compared —— 卡片指向当前已发布的覆盖页面 */
+const MODELS = [
+  { name: 'Laifen Air', href: '/reviews/laifen/', asin: 'B0GWHF4SHD', priceCAD: 99.99, rating: '4.5★' },
+  { name: 'Laifen SE2', href: '/reviews/laifen/', asin: 'B0FPMBBG2J', priceCAD: 143.98, rating: '4.5★' },
+  { name: 'Dreame Pocket Pro', href: '/best-hair-dryers/', asin: 'B0F8QH8XHV', priceCAD: 159.99, rating: '4.6★' },
+  { name: 'Slopehill 1902', href: '/best-hair-dryers/', asin: 'B0C3M9WBQF', priceCAD: 42.99, rating: '4.5★' },
+  { name: 'Wavytalk 1875W', href: '/best-hair-dryers/', asin: 'B09JZ18GLJ', priceCAD: 39.99, rating: '4.3★' },
+];
+
+/** 已发布的核心内容（首页只链向真实存在的页面） */
+const FEATURED = [
+  { label: 'Best Hair Dryers in Canada', href: '/best-hair-dryers/', note: 'Six picks ranked on durability, C$39–160' },
+  { label: 'Best Under C$150', href: '/best-hair-dryers/under-150/', note: 'The C$120 line that changes the complaint rate' },
+  { label: 'Best Dyson Alternatives', href: '/best-hair-dryers/dyson-alternatives/', note: 'Five dupes, and which one survives' },
+  { label: 'Canada Buying Guide', href: '/best-hair-dryers/best-hair-dryer-canada/', note: 'CAD pricing, retailers, ALCI plug, warranty' },
+  { label: 'How Long Hair Dryers Last', href: '/guides/how-long-does-a-hair-dryer-last/', note: '5.5-month median, and every failure mode' },
+  { label: 'Hair Dryer Care', href: '/guides/hair-dryer-care/', note: 'The cord habit behind 417 failures' },
+  { label: 'Laifen Review — all 6 models', href: '/reviews/laifen/', note: 'Including the model we tell you to avoid' },
+  { label: 'Laifen vs Dyson', href: '/comparisons/laifen-vs-dyson/', note: 'Whether 4× the price buys 4× the dryer' },
+  { label: 'Shark vs Dyson', href: '/comparisons/shark-vs-dyson/', note: 'Half the price, with one feature advantage' },
+];
+---
+<Base
+  title={`${SITE_NAME} — Independent Hair Dryer Reviews for Canada`}
+  description={SITE_META_DESCRIPTION}
+  canonical={`${SITE_URL}/`}
+>
+  <Fragment slot="head">
+    <JsonLd
+      title={`${SITE_NAME} — Independent Hair Dryer Reviews for Canada`}
+      description={SITE_META_DESCRIPTION}
+      canonical={`${SITE_URL}/`}
+      schema="WebPage"
+      breadcrumbs={[{ label: 'Home', href: '/' }]}
+    />
+  </Fragment>
+
+  <div class="wrap">
+    {/* ---------- §25 Hero ---------- */}
+    <section class="hero">
+      <h1>Find the right hair dryer.</h1>
+      <p class="lede">Based on testing, not hype.</p>
+      <p class="muted">{SITE_DESCRIPTION}</p>
+      <div class="hero-actions">
+        <a class="cta" href="/best-hair-dryers/">Find Your Hair Dryer</a>
+        <a class="cta cta--secondary" href="/how-we-test/">See How We Test</a>
+      </div>
+      <p class="small muted" style="margin-top:var(--s5);max-width:640px">{BRAND_STATEMENT}</p>
+    </section>
+
+    {/* ---------- §26 Tested & Compared ---------- */}
+    <section>
+      <h2 class="section-title">Tested &amp; Compared</h2>
+      <div class="picks-grid">
+        {MODELS.map((m) => (
+          <a class="pick-card" href={m.href}>
+            <div class="pick-card-media">
+              <span class="small muted">{m.name}</span>
+            </div>
+            <div class="pick-card-body">
+              <TestedBadge kind="tested" />
+              <strong>{m.name}</strong>
+              <span class="small muted">{approxPrice(m.priceCAD)} · {m.rating}</span>
+            </div>
+          </a>
+        ))}
+      </div>
+      <p class="small muted" style="margin-top:var(--s3)">
+        Lab Test Card values are published as each unit completes our protocol.
+        See <a href="/how-we-test/">how we test</a>.
+      </p>
+    </section>
+
+    {/* ---------- 已发布的核心内容（首页只链向真实存在的页面） ---------- */}
+    <section>
+      <h2 class="section-title">Start Here</h2>
+      <div class="pillar-grid">
+        {FEATURED.map((f) => (
+          <a class="pillar-card" href={f.href}>
+            <h3>{f.label}</h3>
+            <p>{f.note}</p>
+          </a>
+        ))}
+      </div>
+    </section>
+
+    {/* ---------- §27 按发质 ---------- */}
+    <section>
+      <h2 class="section-title">Start With Your Hair</h2>
+      <div class="pillar-grid">
+        <a class="pillar-card" href="/hair-types/">
+          <h3>Hair Dryers by Hair Type</h3>
+          <p>{HAIR_TYPES_SUMMARY} — what actually matters for each, and what does not.</p>
+        </a>
+      </div>
+    </section>
+
+    {/* ---------- §28 按需求 ---------- */}
+    <section>
+      <h2 class="section-title">Start With What Matters</h2>
+      <div class="pillar-grid">
+        <a class="pillar-card" href="/best-hair-dryers/">
+          <h3>Best Hair Dryers by Need</h3>
+          <p>{NEEDS_SUMMARY}</p>
+        </a>
+      </div>
+    </section>
+
+    {/* ---------- 信任优先（§75）---------- */}
+    <section style="margin-top:var(--s8)">
+      <h2>How we work</h2>
+      <p>
+        We analyse verified Canadian reviews and Amazon.ca listing data, and we label the source of
+        every claim. We have <strong>not</strong> completed bench testing yet, and we say so on every guide
+        rather than estimating numbers. Read <a href="/how-we-test/">our methodology</a>, our
+        <a href="/editorial-policy/"> editorial policy</a>, and our
+        <a href="/affiliate-disclosure/"> affiliate disclosure</a>.
+      </p>
+    </section>
+  </div>
+</Base>

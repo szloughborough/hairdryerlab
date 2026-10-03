@@ -1,0 +1,16 @@
+---
+/** 自动目录：从 H2 生成，长文必备（榜单/指南页） */
+interface Props { headings: { depth: number; slug: string; text: string }[] }
+const { headings } = Astro.props;
+const h2 = headings.filter((h) => h.depth === 2);
+---
+{h2.length >= 3 && (
+  <aside class="toc">
+    <h2>On this page</h2>
+    <ol>
+      {h2.map((h) => (
+        <li><a href={`#${h.slug}`}>{h.text}</a></li>
+      ))}
+    </ol>
+  </aside>
+)}

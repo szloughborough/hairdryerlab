@@ -1,0 +1,34 @@
+---
+/**
+ * §55(19) Author Box —— 文章尾部署名块。
+ *
+ * §74 诚实边界：署名是编辑团队，不虚构个人专家身份。
+ * 因此这里不使用头像、不写资历年限、不声称我们没有的资质。
+ */
+import { SITE_NAME } from '../data/site';
+
+interface Props {
+  author?: string;
+  updated?: string;
+  /** 该文是否有联盟链接——有则附披露链接 */
+  hasAffiliate?: boolean;
+}
+const { author, updated, hasAffiliate = false } = Astro.props;
+---
+
+<aside class="authorbox">
+  <p class="authorbox__label">Written by</p>
+  <p class="authorbox__name">{author ?? `${SITE_NAME} Editorial Team`}</p>
+  <p class="authorbox__text">
+    Our editors are not electricians, dermatologists or licensed stylists, and we do not claim to be.
+    Our conclusions come from coded analysis of verified Canadian buyer reviews and from Amazon.ca
+    listing data. We have not completed bench testing yet, and we say so on every page where a
+    measured value would appear.
+  </p>
+  <p class="authorbox__links">
+    <a href="/how-we-test/">How we test</a>
+    <a href="/editorial-policy/">Editorial policy</a>
+    {hasAffiliate && <a href="/affiliate-disclosure/">Affiliate disclosure</a>}
+    {updated && <span class="muted">Last updated {updated}</span>}
+  </p>
+</aside>

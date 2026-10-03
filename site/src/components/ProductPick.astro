@@ -1,0 +1,58 @@
+---
+/**
+ * 产品推荐卡（含图片）
+ * 图片来自 src/data/products.ts，单一数据源便于统一替换。
+ *
+ * §48 Price Box + §35 CTA System：价格块与 CTA 都改用品牌组件渲染，
+ * 这样 155 条外链自动获得统一的 "Check price" 文案与 rel="sponsored"。
+ */
+import { PRODUCT_IMAGES, approxPrice, PRICE_CHECKED } from '../data/products';
+import { resolveAffiliateUrl } from '../data/affiliate.mjs';
+import PriceBox from './PriceBox.astro';
+import AffiliateCTA from './AffiliateCTA.astro';
+
+interface Props {
+  asin: string;
+  name: string;
+  priceCAD: number;
+  rating: number;
+  ratingCount: number;
+  badge?: string;
+  bestFor?: string;
+  /** frontmatter 里的占位符 {{affiliate_url_xxx}}，或已写死的真实链接 */
+  affiliateUrl: string;
+}
+const { asin, name, priceCAD, rating, ratingCount, badge, bestFor, affiliateUrl } = Astro.props;
+const img = PRODUCT_IMAGES[asin];
+const href = resolveAffiliateUrl(affiliateUrl, asin);
+// 方案 B：对外只展示约数价格，精确值仅用于内部比较（Amazon Associates 价格展示政策）
+const price = approxPrice(priceCAD);
+// 未解析的占位符（凭据未接入时）渲染成不可点击文本，而不是「点了没反应」的假链接。
+// 见《联盟API接入-对接说明.md》：pending 必须不可点击。
+const isPending = typeof href === 'string' && href.startsWith('#affiliate-pending');
+---
+<div class="pick" id={asin}>
+  <div class="pick-media">
+    {img ? (
+      <img src={img.image} alt={img.imageAlt} width="600" height="600" loading="lazy" decoding="async" />
+    ) : (
+      <span class="muted small">No image</span>
+    )}
+  </div>
+  <div class="pick-body">
+    {badge && <div class="small muted">{badge}</div>}
+    <h3>{name}</h3>
+    <p class="pick-meta">
+      {rating.toFixed(1)}★ ({ratingCount.toLocaleString('en-CA')} ratings){bestFor ? ` · ${bestFor}` : ''}
+    </p>
+    <PriceBox amount={price} retailer="Amazon.ca" checked={PRICE_CHECKED} label="Price in Canada (approx.)" />
+    {isPending ? (
+      <p class="small muted">
+        Retailer link pending — this build has no affiliate credentials, so no purchase link is
+        shown. See <a href="/affiliate-disclosure/">our affiliate disclosure</a>.
+      </p>
+    ) : (
+      <AffiliateCTA href={href} label="Check price" support="at Amazon.ca" />
+    )}
+  </div>
+</div>

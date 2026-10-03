@@ -1,0 +1,91 @@
+---
+import { getCollection, render } from 'astro:content';
+import fs from 'node:fs';
+import path from 'node:path';
+import Article from '../layouts/Article.astro';
+import { COLLECTION_PREFIX, SITE_URL } from '../data/site';
+
+export async function getStaticPaths() {
+  // 注意：常量必须声明在函数内部 —— Astro 会把 getStaticPaths 提升到独立作用域，
+  // frontmatter 顶层的常量在编译后会取不到。
+  const list = ['best', 'review', 'compare', 'for', 'learn', 'ca'];
+  const prefixMap: Record<string, string> = {
+    best: '/best-hair-dryers/',
+    review: '/reviews/',
+    compare: '/comparisons/',
+    for: '/hair-types/',
+    learn: '/guides/',
+    ca: '/best-hair-dryers/',
+  };
+  // §55(18) Related Content 的分组标签
+  const kindMap: Record<string, string> = {
+    best: 'Buying guide',
+    review: 'Review',
+    compare: 'Comparison',
+    for: 'Hair type',
+    learn: 'Guide',
+    ca: 'Buying guide',
+  };
+
+  const collected: { route: string; entry: any; collection: string }[] = [];
+  // 路由（去掉首尾斜杠）→ 标题，用于把 related 的 URL 解析成可读链接文字
+  const titleMap = new Map<string, { label: string; kind: string }>();
+
+  for (const name of list) {
+    // 空集合直接跳过，避免 Astro 输出 "collection does not exist or is empty" 噪音日志
+    const dir = path.join(process.cwd(), 'src', 'content', name);
+    let hasContent = false;
+    try {
+      hasContent = fs.existsSync(dir) && fs.readdirSync(dir).some((f) => f.endsWith('.mdx'));
+    } catch {
+      hasContent = false;
+    }
+    if (!hasContent) continue;
+
+    const entries = await getCollection(name);
+    for (const entry of entries) {
+      if (entry.data.draft && !import.meta.env.DEV) continue; // 草稿只在开发环境可见
+
+      // 路由：优先用 frontmatter 的 route（品牌规范 §54 中位于根级的页面，如 /how-we-test/）
+      // 否则 = 集合前缀 + slug
+      const bare = (entry.data.route ?? `${prefixMap[name]}${entry.data.slug}`)
+        .replace(/^\/+/, '')
+        .replace(/\/+$/, '');
+
+      collected.push({ route: bare, entry, collection: name });
+      titleMap.set(bare, {
+        label: entry.data.h1 ?? entry.data.title,
+        kind: kindMap[name] ?? 'Guide',
+      });
+    }
+  }
+
+  return collected.map(({ route, entry, collection }) => {
+    const relatedResolved = (entry.data.related ?? []).map((href: string) => {
+      const key = String(href).replace(/^\/+/, '').replace(/\/+$/, '');
+      const hit = titleMap.get(key);
+      return hit
+        ? { href: `/${key}/`, label: hit.label, kind: hit.kind }
+        : { href: String(href), label: key, kind: undefined };
+    });
+
+    return {
+      params: { slug: route },
+      props: { entry: { ...entry, collection }, route, relatedResolved },
+    };
+  });
+}
+
+const { entry, route, relatedResolved } = Astro.props;
+const { Content, headings } = await render(entry);
+const canonical = `${SITE_URL}/${route}/`;
+---
+<Article
+  entry={entry}
+  headings={headings}
+  route={route}
+  canonical={canonical}
+  relatedResolved={relatedResolved}
+>
+  <Content />
+</Article>

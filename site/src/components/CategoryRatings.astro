@@ -1,0 +1,19 @@
+---
+/**
+ * §31 分类结论 —— 替代数字总分（禁止 9.4/10、94%、4.8/5）
+ * 有实测值时，同时给出实测数值。
+ */
+interface Item { label: string; grade: string; measured?: string }
+interface Props { items: Item[] }
+const { items } = Astro.props;
+---
+<div class="ratings">
+  {items.map((i) => (
+    <div class="ratings__row">
+      <span class="ratings__k">{i.label}</span>
+      <span class="ratings__v">
+        {i.grade}{i.measured ? ` · ${i.measured}` : ''}
+      </span>
+    </div>
+  ))}
+</div>

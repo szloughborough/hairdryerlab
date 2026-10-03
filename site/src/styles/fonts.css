@@ -1,0 +1,61 @@
+/* ---------------------------------------------------------------
+   自托管字体 —— 由 _scripts/selfhost_fonts.py + dedupe_fonts.py 生成。
+   如需更新，重跑那两个脚本，不要手改。
+
+   为什么不用 Google Fonts CDN：
+     远程加载会让 Google 在每次页面加载时收到访客 IP 与 User-Agent，
+     而隐私政策并未披露该第三方请求。自托管同时少一个 DNS + TLS 握手，
+     且缓存策略完全可控。
+
+   为什么用「字重区间」而不是离散值：
+     Manrope 与 Inter 都是可变字体，同一文件覆盖整个字重范围。
+     声明 `font-weight: 600 800` 让浏览器直接使用可变轴，
+     比为三个离散值各声明一条 @font-face 更正确也更省。
+
+   子集：latin + latin-ext（en-CA；法语同样落在这两个子集内，见 §67）
+   合计 4 个文件 / 169 KB
+   --------------------------------------------------------------- */
+
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 600 800;
+  font-display: swap;
+  src: url(/fonts/manrope-variable-latin.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+    U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 600 800;
+  font-display: swap;
+  src: url(/fonts/manrope-variable-ext.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF,
+    U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020,
+    U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url(/fonts/inter-variable-latin.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+    U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url(/fonts/inter-variable-ext.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF,
+    U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020,
+    U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}

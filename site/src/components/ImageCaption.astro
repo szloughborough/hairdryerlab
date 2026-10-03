@@ -1,0 +1,45 @@
+---
+/**
+ * §55(23) Image caption —— 图 + 说明，并支持「待拍摄」状态。
+ *
+ * §39 图片规范：alt 必填（装饰性图传 alt=""）。
+ * §44 图片说明必须写清图的来源与内容，不用 "image of" 这类废话。
+ *
+ * 为什么有 pending 状态：品牌规范 §62 要求 About 页展示真实测试环境照片，
+ * 而 §38 禁止用通用图库照片冒充。我们目前没有拍摄，所以与其留一个
+ * 读者看不见的 HTML 注释，不如显示一个诚实的占位 —— 与 Lab Test Card
+ * 的「Not yet tested」是同一套做法。
+ */
+interface Props {
+  /** 省略 src 即渲染「待拍摄」占位 */
+  src?: string;
+  alt?: string;
+  caption?: string;
+  width?: number;
+  height?: number;
+  /** 首屏图用 eager，其余 lazy（默认 lazy） */
+  loading?: 'lazy' | 'eager';
+  /** 待拍摄时显示的说明 */
+  pendingLabel?: string;
+}
+const {
+  src,
+  alt = '',
+  caption,
+  width,
+  height,
+  loading = 'lazy',
+  pendingLabel = 'Photograph pending',
+} = Astro.props;
+---
+
+<figure class="fig">
+  {src ? (
+    <img src={src} alt={alt} width={width} height={height} loading={loading} decoding="async" />
+  ) : (
+    <div class="fig__slot" role="img" aria-label={pendingLabel}>
+      <span class="fig__slot-text">{pendingLabel}</span>
+    </div>
+  )}
+  {caption && <figcaption class="fig__cap">{caption}</figcaption>}
+</figure>

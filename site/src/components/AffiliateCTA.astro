@@ -1,0 +1,23 @@
+---
+/**
+ * §35 CTA System —— 统一 CTA 文案
+ * 首选 "Check price"；不得使用 BUY NOW!!! / GET DEAL / LIMITED TIME 等（§36）
+ * §72 商业完整性：CTA 必须与编辑结论分开呈现。
+ */
+interface Props {
+  href: string;
+  variant?: 'primary' | 'secondary';
+  label?: string;      // 默认 "Check price"
+  support?: string;    // 例如 "at Laifen Canada"
+}
+const { href, variant = 'primary', label = 'Check price', support } = Astro.props;
+---
+<p>
+  <a
+    class={variant === 'primary' ? 'cta' : 'cta cta--secondary'}
+    href={href}
+    rel="sponsored nofollow noopener"
+    target="_blank"
+  >{label}</a>
+  {support && <span class="cta-support">{support}</span>}
+</p>

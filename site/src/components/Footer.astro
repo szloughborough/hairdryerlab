@@ -1,0 +1,55 @@
+---
+/** Footer —— 遵循品牌规范 §24（结构 + Canada 行）/ §37（披露） */
+import {
+  FOOTER_MAIN, FOOTER_COMPANY, FOOTER_CANADA_LINE, SITE_NAME,
+} from '../data/site';
+const year = new Date().getFullYear();
+---
+<footer class="site-footer">
+  <div class="footer-cols">
+    <div>
+      <img
+        class="footer-logo"
+        src="/brand/logo-lockup.png"
+        alt={SITE_NAME}
+        width="599" height="64"
+        loading="lazy" decoding="async"
+      />
+      <p class="footer-brandline">{FOOTER_CANADA_LINE}</p>
+    </div>
+
+    <div>
+      <h3>Navigation</h3>
+      <ul>
+        {FOOTER_MAIN.map((l) => <li><a href={l.href}>{l.label}</a></li>)}
+      </ul>
+    </div>
+
+    <div>
+      <h3>Company</h3>
+      <ul>
+        {FOOTER_COMPANY.map((l) => <li><a href={l.href}>{l.label}</a></li>)}
+      </ul>
+    </div>
+
+    <div>
+      <h3>Disclosure</h3>
+      <p class="footer-brandline">
+        Hair Dryer Lab may earn a commission when you buy through our links.
+        This doesn't affect how we test or review products.
+      </p>
+      <ul>
+        <li><a href="/affiliate-disclosure/">Read the full disclosure</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    <p>© {year} {SITE_NAME}. hairdryerlab.ca</p>
+    <p>
+      <a href="/privacy-policy/">Privacy Policy</a> ·
+      <a href="/terms/">Terms</a> ·
+      <a href="/editorial-policy/">Editorial Policy</a>
+    </p>
+  </div>
+</footer>

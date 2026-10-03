@@ -1,0 +1,47 @@
+---
+/** Header —— 遵循品牌规范 §22（导航项）/ §23（行为）/ §10.1（Logo 处理） */
+import { NAV, SITE_NAME } from '../data/site';
+
+// §22：主导航 5 项；How We Test 与 Search 单独归入右侧操作区
+const primary = NAV.slice(0, 5);
+const howWeTest = NAV[NAV.length - 1];
+---
+<header class="site-header">
+  <div class="inner">
+    {/* 品牌 logo：使用正式 lockup 文件（符号 + HAIR DRYER LAB 字标）
+        按品牌规范 §10.1——排版主导 logo，不得改写或重绘 */}
+    <a class="brand" href="/" aria-label={`${SITE_NAME} — home`}>
+      <img
+        src="/brand/logo-lockup.png"
+        alt={SITE_NAME}
+        width="599" height="64"
+        fetchpriority="high" decoding="async"
+      />
+    </a>
+
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="main-nav">Menu</button>
+
+    <nav class="main-nav" id="main-nav" aria-label="Primary">
+      <ul>
+        {primary.map((item) => (
+          <li><a href={item.href}>{item.label}</a></li>
+        ))}
+      </ul>
+    </nav>
+
+    <div class="header-actions">
+      <a class="header-search" href={howWeTest.href}>{howWeTest.label}</a>
+      <button class="header-search" type="button" aria-label="Search">Search</button>
+    </div>
+  </div>
+</header>
+
+<script>
+  // 移动端菜单：样式与逻辑都限定在 .site-header 作用域内
+  const btn = document.querySelector('.site-header .nav-toggle');
+  const nav = document.querySelector('.site-header #main-nav');
+  btn?.addEventListener('click', () => {
+    const open = nav?.classList.toggle('open');
+    btn.setAttribute('aria-expanded', String(Boolean(open)));
+  });
+</script>

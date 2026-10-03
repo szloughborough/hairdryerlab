@@ -1,0 +1,26 @@
+---
+import Base from '../layouts/Base.astro';
+import { SITE_URL } from '../data/site';
+---
+<Base
+  title="Page not found | Hair Dryer Lab"
+  description="The page you were looking for does not exist. Start with our best hair dryers guide or our research method."
+  canonical={`${SITE_URL}/404/`}
+>
+  <div class="wrap-article">
+    <main>
+      <h1>Page not found</h1>
+      <p class="lede">
+        That page does not exist — but our research does. Start with the
+        <a href="/best-hair-dryers/">best hair dryers guide</a>, the
+        <a href="/best-hair-dryers/dyson-alternatives/">Dyson alternatives guide</a>, or read
+        <a href="/how-we-test/">how we research hair dryers</a>.
+      </p>
+      <p class="small muted">
+        If you followed a link from another site, it may be out of date. Our guides live under
+        <code>/best-hair-dryers/</code>, <code>/reviews/</code>, <code>/comparisons/</code>,
+        <code>/hair-types/</code> and <code>/guides/</code>.
+      </p>
+    </main>
+  </div>
+</Base>

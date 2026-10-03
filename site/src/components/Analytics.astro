@@ -1,0 +1,61 @@
+---
+/**
+ * 第三方分析脚本 —— GA4 + Microsoft Clarity
+ *
+ * ID 全部来自 src/data/site.ts 的 ANALYTICS，改那一处即全站生效。
+ *
+ * ⚠️ 三点必须知道：
+ *
+ * 1. **这两个工具都会写 cookie，Clarity 还会录制会话回放与热图。**
+ *    因此它们必须在 /privacy-policy/ 里如实披露。目前该页已披露
+ *    Google Analytics 4 与 Microsoft Clarity（见 LEGAL.analytics）。
+ *
+ * 2. **本地 dev 不加载。** 只在实际部署（import.meta.env.PROD）时注入，
+ *    避免开发时的浏览污染统计数据，也避免在本地无谓地写 cookie。
+ *
+ * 3. **同意（consent）问题尚未解决。** 见下方 `CONSENT_GATE` 注释。
+ *    加拿大联邦 PIPEDA 与魁北克 Law 25 对非必要 cookie（Clarity 的会话录制）
+ *    通常要求事先同意。当前实现是「直接加载」，若面向魁北克投放，
+ *    需要改为先征得同意再加载。
+ */
+import { ANALYTICS } from '../data/site';
+
+/**
+ * 同意开关。
+ *   false = 当前行为：直接加载（尚未实现同意横幅）
+ *   true  = 预留：只有在用户同意后才加载（需配合一个同意横幅组件）
+ *
+ * 改成 true 之前必须先有横幅把决定写进 localStorage 的 'hdl-consent'，
+ * 否则脚本永远不会加载。
+ */
+const CONSENT_GATE = false;
+
+const shouldLoad = import.meta.env.PROD && !CONSENT_GATE;
+const clarityId = ANALYTICS.clarity;
+---
+
+{shouldLoad && (
+  <>
+    {/* ---------- Google Analytics 4（写 cookie） ---------- */}
+    <script
+      is:inline
+      async
+      src={`https://www.googletagmanager.com/gtag/js?id=${ANALYTICS.ga4}`}
+    ></script>
+    <script is:inline define:vars={{ gaId: ANALYTICS.ga4 }}>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() { dataLayer.push(arguments); }
+      gtag('js', new Date());
+      gtag('config', gaId);
+    </script>
+
+    {/* ---------- Microsoft Clarity（会话回放 / 热图，比 GA4 更侵入） ---------- */}
+    <script is:inline define:vars={{ clarityId }}>
+      (function (c, l, a, r, i, t, y) {
+        c[a] = c[a] || function () { (c[a].q = c[a].q || []).push(arguments); };
+        t = l.createElement(r); t.async = 1; t.src = 'https://www.clarity.ms/tag/' + i;
+        y = l.getElementsByTagName(r)[0]; y.parentNode.insertBefore(t, y);
+      })(window, document, 'clarity', 'script', clarityId);
+    </script>
+  </>
+)}

@@ -1,0 +1,34 @@
+---
+/**
+ * §55(17) Feature Card —— 需求/特性入口卡（快干、静音、差旅、预算等）。
+ * 与 HairTypeCard 结构相同，但按 §75 用不同类目标识区分语义：
+ * 发质卡是 navy 顶边，特性卡是 ice 顶边，视觉上从属一级。
+ */
+interface Item {
+  href: string;
+  name: string;
+  blurb: string;
+  image?: string;
+  imageAlt?: string;
+}
+interface Props {
+  items: Item[];
+  title?: string;
+}
+const { items, title } = Astro.props;
+---
+
+{title && <h2 class="section-title">{title}</h2>}
+<div class="tile-grid">
+  {items.map((it) => (
+    <a class="tile tile--feature" href={it.href}>
+      {it.image && (
+        <figure class="tile__media">
+          <img src={it.image} alt={it.imageAlt ?? ''} loading="lazy" decoding="async" />
+        </figure>
+      )}
+      <p class="tile__name">{it.name}</p>
+      <p class="tile__blurb">{it.blurb}</p>
+    </a>
+  ))}
+</div>

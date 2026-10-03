@@ -1,0 +1,86 @@
+---
+/**
+ * §42(5) / §55(4) Product Hero —— 文章顶部的首选产品块。
+ *
+ * §41 移动优先：首屏 1–1.5 屏内要能看到产品名、一行结论、产品图、
+ * best-for 与价格 CTA。因此这个块放在正文之前（见 Article.astro）。
+ *
+ * 诚实边界：实测值来自 frontmatter 的 labTest；没有就写 Not yet tested，
+ * 不估计、不留空。
+ */
+import { PRODUCT_IMAGES, approxPrice, PRICE_CHECKED } from '../data/products';
+import { resolveAffiliateUrl } from '../data/affiliate.mjs';
+import AffiliateCTA from './AffiliateCTA.astro';
+
+interface Props {
+  name: string;
+  asin: string;
+  priceCAD: number;
+  rating: number;
+  ratingCount: number;
+  /** 一行结论（通常取正文 verdict 的前半句） */
+  verdict?: string;
+  /** best-for 陈述 */
+  bestFor?: string;
+  /** 该产品已完成实测的项；缺省则显示未测 */
+  measured?: { label: string; value: string }[];
+  affiliateUrl: string;
+  eyebrow?: string;
+}
+const {
+  name,
+  asin,
+  priceCAD,
+  rating,
+  ratingCount,
+  verdict,
+  bestFor,
+  measured,
+  affiliateUrl,
+  eyebrow = 'Our pick',
+} = Astro.props;
+
+const img = PRODUCT_IMAGES[asin];
+const href = resolveAffiliateUrl(affiliateUrl, asin);
+const isPending = typeof href === 'string' && href.startsWith('#affiliate-pending');
+const hasMeasured = Array.isArray(measured) && measured.length > 0;
+---
+
+<aside class="product-hero">
+  <figure class="product-hero__media">
+    {img ? (
+      <img src={img.image} alt={img.imageAlt} width="600" height="600" loading="eager" decoding="async" />
+    ) : (
+      <span class="small muted">{name}</span>
+    )}
+  </figure>
+
+  <div>
+    <p class="product-hero__eyebrow">{eyebrow}</p>
+    <p class="product-hero__name">{name}</p>
+
+    {verdict && <p class="product-hero__verdict">{verdict}</p>}
+    {bestFor && <p class="product-hero__verdict"><strong>Best for:</strong> {bestFor}</p>}
+
+    <p class="product-hero__facts">
+      <span><span class="num">{rating.toFixed(1)}★</span> ({ratingCount.toLocaleString('en-CA')} ratings)</span>
+      <span>Price <span class="num">{approxPrice(priceCAD)}</span></span>
+      <span class="muted">checked {PRICE_CHECKED}</span>
+      {hasMeasured ? (
+        measured.map((m) => (
+          <span>{m.label} <span class="num">{m.value}</span></span>
+        ))
+      ) : (
+        <span class="muted">Measured values: not yet tested</span>
+      )}
+    </p>
+
+    {isPending ? (
+      <p class="small muted">
+        Retailer link pending — this build has no affiliate credentials, so no purchase link is shown.
+      </p>
+    ) : (
+      <AffiliateCTA href={href} label="Check price" support="at Amazon.ca" />
+    )}
+  </div>
+</aside>

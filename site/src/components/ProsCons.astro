@@ -1,0 +1,15 @@
+---
+/** §70 Pros and Cons —— 编辑式处理，不用大色块 */
+interface Props { liked: string[]; notLiked: string[] }
+const { liked, notLiked } = Astro.props;
+---
+<div class="proscons">
+  <div class="proscons--liked">
+    <h3>What we liked</h3>
+    <ul>{liked.map((t) => <li>{t}</li>)}</ul>
+  </div>
+  <div class="proscons--not">
+    <h3>What we didn't</h3>
+    <ul>{notLiked.map((t) => <li>{t}</li>)}</ul>
+  </div>
+</div>

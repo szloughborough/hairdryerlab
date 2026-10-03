@@ -1,0 +1,50 @@
+---
+/**
+ * §55(9) Comparison Table —— 可复用对比表。
+ *
+ * §33 表格规则：可横向滚动（移动端）、表头固定语义、附核对日期说明。
+ * 正文里已有的 markdown 表格由 rehype 插件套 .table-scroll 外壳；
+ * 新内容可直接用本组件以获得统一的表头样式与说明行。
+ *
+ * 禁止：数字总分列、星级自评（§31）。只放可核对的数值与事实。
+ */
+interface Row {
+  /** 行首标签（左侧） */
+  label: string;
+  /** 各列的值，长度应与 columns 一致 */
+  values: string[];
+  /** 需要加粗强调的列下标 */
+  emphasis?: number[];
+}
+interface Props {
+  columns: string[];
+  rows: Row[];
+  caption?: string;
+  /** 数据核对日期说明 */
+  note?: string;
+}
+const { columns, rows, caption, note } = Astro.props;
+---
+
+<div class="table-scroll">
+  <table class="cmp-table">
+    {caption && <caption class="cmp-table__caption">{caption}</caption>}
+    <thead>
+      <tr>
+        <th scope="col"><span class="muted">Compare</span></th>
+        {columns.map((c) => <th scope="col">{c}</th>)}
+      </tr>
+    </thead>
+    <tbody>
+      {rows.map((r) => (
+        <tr>
+          <th scope="row">{r.label}</th>
+          {r.values.map((v, i) => (
+            <td>{r.emphasis?.includes(i) ? <strong>{v}</strong> : v}</td>
+          ))}
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</div>
+{note && <p class="cmp-table__note">{note}</p>}

@@ -1,0 +1,17 @@
+---
+/**
+ * 证据等级标签 —— 本站特色，全站保持一致。
+ * 用法（MDX 内）：<Evidence kind="analysis" />
+ */
+interface Props { kind: 'measured' | 'analysis' | 'amazon' | 'feedback' | 'claim' }
+const { kind } = Astro.props;
+const MAP = {
+  measured: { cls: 'ev-measured', text: 'Measured' },
+  analysis: { cls: 'ev-analysis', text: 'Review analysis' },
+  amazon: { cls: 'ev-amazon', text: 'Amazon.ca data' },
+  feedback: { cls: 'ev-feedback', text: 'Buyer feedback' },
+  claim: { cls: 'ev-claim', text: 'Manufacturer claim' },
+} as const;
+const m = MAP[kind];
+---
+<span class={`ev ${m.cls}`}>{m.text}</span>

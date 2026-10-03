@@ -1,0 +1,132 @@
+---
+/**
+ * JSON-LD 结构化数据
+ *
+ * 硬规则（见《技术SEO与信息架构规划.md》§7）：
+ *  - 不输出 Offer（我们是联盟站不是卖家，价格不由我们控制）
+ *  - 不输出 aggregateRating（除非评分来自我们自己实测）
+ *  - FAQPage 必须与可见 FAQ 逐字一致
+ */
+import { SITE_URL, SITE_NAME } from '../data/site';
+
+interface Faq { q: string; a: string }
+interface Product { name: string; brand: string; priceCAD: number; rating: number; ratingCount: number; asin: string }
+
+interface Props {
+  title: string;
+  description: string;
+  canonical: string;
+  schema: string;
+  published?: string;
+  updated?: string;
+  author?: string;
+  faq?: Faq[];
+  products?: Product[];
+  breadcrumbs?: { label: string; href: string }[];
+}
+
+const { title, description, canonical, schema, published, updated, author, faq = [], products = [], breadcrumbs = [] } = Astro.props;
+
+const graph: Record<string, unknown>[] = [];
+
+// Organization + WebSite（全站）
+graph.push({
+  '@type': 'Organization',
+  '@id': `${SITE_URL}/#organization`,
+  name: SITE_NAME,
+  url: SITE_URL,
+});
+graph.push({
+  '@type': 'WebSite',
+  '@id': `${SITE_URL}/#website`,
+  url: SITE_URL,
+  name: SITE_NAME,
+  publisher: { '@id': `${SITE_URL}/#organization` },
+});
+
+// 面包屑（独立于 Product 资格）
+if (breadcrumbs.length) {
+  graph.push({
+    '@type': 'BreadcrumbList',
+    itemListElement: breadcrumbs.map((b, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      name: b.label,
+      item: `${SITE_URL}${b.href}`,
+    })),
+  });
+}
+
+// 作者：团队署名用 Organization，个人署名用 Person。
+// 我们刻意不虚构个人专家身份（见 /editorial-policy/ 与 /about/）。
+const TEAM_AUTHORS: Record<string, string> = {
+  'hair-dryer-lab-editorial': 'Hair Dryer Lab Editorial Team',
+};
+const teamName = author ? TEAM_AUTHORS[author] : undefined;
+const authorId = teamName
+  ? `${SITE_URL}/authors/${author}/#organization`
+  : `${SITE_URL}/authors/${author}/#person`;
+
+if (author) {
+  graph.push(
+    teamName
+      ? { '@type': 'Organization', '@id': authorId, name: teamName, url: `${SITE_URL}/authors/${author}/` }
+      : { '@type': 'Person', '@id': authorId, name: author, url: `${SITE_URL}/authors/${author}/` },
+  );
+}
+
+// 文章主体
+const isArticle = ['Article', 'ItemList', 'HowTo'].includes(schema);
+if (isArticle) {
+  graph.push({
+    '@type': schema === 'ItemList' ? 'Article' : schema,
+    '@id': `${canonical}#article`,
+    headline: title,
+    description,
+    inLanguage: 'en-CA',
+    mainEntityOfPage: canonical,
+    ...(published ? { datePublished: published } : {}),
+    ...(updated ? { dateModified: updated } : {}),
+    ...(author ? { author: { '@id': authorId } } : {}),
+    publisher: { '@id': `${SITE_URL}/#organization` },
+  });
+}
+
+// 榜单 ItemList（只列条目，不输出 Offer / aggregateRating）
+if (schema === 'ItemList' && products.length) {
+  graph.push({
+    '@type': 'ItemList',
+    '@id': `${canonical}#itemlist`,
+    itemListOrder: 'https://schema.org/ItemListOrderDescending',
+    numberOfItems: products.length,
+    itemListElement: products.map((p, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      item: {
+        '@type': 'Product',
+        name: p.name,
+        brand: { '@type': 'Brand', name: p.brand },
+        sku: p.asin,
+        url: `${canonical}#${p.asin}`,
+        // 注意：不输出 offers（我们不是卖家）；不输出 aggregateRating（非我方实测评分）
+      },
+    })),
+  });
+}
+
+// FAQPage（与可见 FAQ 逐字一致）
+if (faq.length) {
+  graph.push({
+    '@type': 'FAQPage',
+    '@id': `${canonical}#faq`,
+    mainEntity: faq.map((f) => ({
+      '@type': 'Question',
+      name: f.q,
+      acceptedAnswer: { '@type': 'Answer', text: f.a },
+    })),
+  });
+}
+
+const json = { '@context': 'https://schema.org', '@graph': graph };
+---
+<script type="application/ld+json" set:html={JSON.stringify(json)} />

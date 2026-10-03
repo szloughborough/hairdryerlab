@@ -1,0 +1,61 @@
+---
+import Seo from '../components/Seo.astro';
+import Analytics from '../components/Analytics.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+// §16 字体：自托管（见 styles/fonts.css 顶部说明）。放在 global.css 之前，
+// 保证 @font-face 先于使用字体的规则被解析。
+import '../styles/fonts.css';
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description: string;
+  canonical: string;
+  ogType?: string;
+  published?: string;
+  updated?: string;
+  image?: string;
+}
+const { title, description, canonical, ogType, published, updated, image } = Astro.props;
+---
+<!doctype html>
+<html lang="en-CA">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- favicon：由正式 logo 的 mark 生成（品牌规范 §65：navy mark + 品牌底色） -->
+    <link rel="icon" href="/brand/favicon.ico" sizes="any" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/brand/favicon-32.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/brand/favicon-192.png" />
+    <link rel="apple-touch-icon" href="/brand/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <!-- §13 Lab Navy -->
+    <meta name="theme-color" content="#183153" />
+
+    <!-- §16 字体 Manrope（标题/数字）+ Inter（正文）为自托管，见 styles/fonts.css。
+         不使用 Google 的字体 CDN，也不预连接它 —— 该第三方请求已移除，理由：
+         它会把访客 IP 与 User-Agent 发给 Google，而隐私政策未披露这一点。 -->
+    <link rel="preload" href="/fonts/manrope-variable-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/inter-variable-latin.woff2" as="font" type="font/woff2" crossorigin />
+
+    <Seo
+      title={title}
+      description={description}
+      canonical={canonical}
+      type={ogType}
+      published={published}
+      updated={updated}
+      image={image}
+    />
+    <slot name="head" />
+
+    <!-- 分析脚本（GA4 + Clarity）。仅生产环境加载，ID 见 src/data/site.ts -->
+    <Analytics />
+  </head>
+  <body>
+    <Header />
+    <slot />
+    <Footer />
+  </body>
+</html>

@@ -1,0 +1,19 @@
+---
+/**
+ * §48 Price Box —— 必须明确货币、零售商、核对日期；不得暗示价格永久有效。
+ * §40 加拿大本地化价格呈现。
+ */
+interface Props {
+  amount: string;      // 例如 "CAD $169.99"
+  retailer?: string;   // 例如 "Laifen Canada"
+  checked: string;     // 例如 "2026-10-02"
+  label?: string;
+}
+const { amount, retailer, checked, label = 'Price in Canada' } = Astro.props;
+---
+<div class="price-box">
+  <p class="price-box__label">{label}</p>
+  <p class="price-box__amount">{amount}</p>
+  {retailer && <p class="price-box__retailer">{retailer}</p>}
+  <p class="price-box__checked">Price checked {checked}</p>
+</div>

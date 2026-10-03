@@ -1,0 +1,18 @@
+---
+/** §47 Badge System —— 克制、小、不游戏化 */
+interface Props { kind?: 'tested' | 'value' | 'updated' | 'travel' | 'curly'; text?: string }
+const { kind = 'tested', text } = Astro.props;
+const MAP = {
+  tested: 'Tested',
+  value: 'Best for Value',
+  updated: 'Updated',
+  travel: 'Best for Travel',
+  curly: 'Best for Curly Hair',
+} as const;
+const label = text ?? MAP[kind];
+const cls = kind === 'tested' ? 'badge badge--tested'
+  : kind === 'value' ? 'badge badge--value'
+  : kind === 'updated' ? 'badge badge--updated'
+  : 'badge';
+---
+<span class={cls}>{label}</span>

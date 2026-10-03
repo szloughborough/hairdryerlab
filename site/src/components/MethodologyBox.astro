@@ -1,0 +1,35 @@
+---
+/**
+ * §55(14) Methodology Box —— 把方法与来源讲清楚，与广告内容分开（§51 / §72）。
+ *
+ * 默认文案来自本站真实的方法论：以加拿大评测编码分析为主证据，
+ * 台架实测尚未完成。可传 items 覆盖，用于特定页面。
+ */
+import { SITE_NAME } from '../data/site';
+
+interface Props {
+  items?: string[];
+  href?: string;
+  label?: string;
+}
+const {
+  items,
+  href = '/how-we-test/',
+  label = 'How these picks were made',
+} = Astro.props;
+
+const DEFAULT_ITEMS = [
+  'We coded 8,261 verified Canadian reviews across 98 models — this is our primary evidence, not a product description. (review analysis)',
+  'We verify ratings, price band and seller structure against Amazon.ca listings, with a stated check date. (Amazon.ca data)',
+  'We have not completed bench testing. Where a measured value would go, we say "Not yet tested" rather than estimating.',
+];
+const list = items ?? DEFAULT_ITEMS;
+---
+
+<aside class="method-box">
+  <p class="method-box__label">{label}</p>
+  <ul>
+    {list.map((t) => <li>{t}</li>)}
+  </ul>
+  <p><a href={href}>Read the full method at {SITE_NAME} →</a></p>
+</aside>

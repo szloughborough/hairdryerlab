@@ -1,0 +1,50 @@
+---
+/**
+ * 榜首推荐横排（含产品图）
+ * 数据来自 Article 布局传入的 frontmatter products，图片来自 src/data/products.ts
+ */
+import { PRODUCT_IMAGES, PRICE_CHECKED, PRICE_NOTE, approxPrice } from '../data/products';
+
+interface Product {
+  name: string;
+  brand: string;
+  priceCAD: number;
+  rating: number;
+  ratingCount: number;
+  asin: string;
+  affiliateUrl: string;
+}
+interface Props { products: Product[] }
+const { products } = Astro.props;
+---
+<section class="picks">
+  <h2 id="top-picks">Top picks at a glance</h2>
+  <div class="picks-grid">
+    {products.map((p) => {
+      const img = PRODUCT_IMAGES[p.asin];
+      return (
+        <a class="pick-card" href={`#${p.asin}`}>
+          <div class="pick-card-media">
+            {img ? (
+              <img
+                src={img.image}
+                alt={img.imageAlt}
+                width="600"
+                height="600"
+                loading="lazy"
+                decoding="async"
+              />
+            ) : (
+              <span class="muted small">{p.name}</span>
+            )}
+          </div>
+          <div class="pick-card-body">
+            <strong>{p.name}</strong>
+            <span class="small muted">{approxPrice(p.priceCAD)} · {p.rating.toFixed(1)}★</span>
+          </div>
+        </a>
+      );
+    })}
+  </div>
+  <p class="small muted">{PRICE_NOTE} Ratings checked {PRICE_CHECKED}. See the full comparison table below.</p>
+</section>

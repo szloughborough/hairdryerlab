@@ -1,0 +1,12 @@
+# pnpm 11 的依赖构建脚本白名单。
+#
+# ⚠️ 这两个值此前是未填写的占位文本（"set this to true or false"），
+# 导致 pnpm 无法判定构建策略，在 `pnpm preview` / `pnpm build` 前的依赖校验
+# 阶段尝试删除并重装整个 node_modules，无 TTY 时直接失败：
+#     ERR_PNPM_ABORTED_REMOVE_MODULES_DIR_NO_TTY
+#
+# esbuild 与 sharp 都需要运行安装脚本来准备原生二进制，因此为 true。
+# 相关设置见 site/.npmrc。
+allowBuilds:
+  esbuild: true
+  sharp: true

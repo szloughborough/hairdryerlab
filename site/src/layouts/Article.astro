@@ -1,0 +1,198 @@
+---
+/**
+ * 文章布局 —— 遵循品牌规范
+ * §41 移动优先（核心结论前置）
+ * §42 文章页结构顺序（面包屑 → H1 → 一行结论 → 披露 → 产品 → Best for/Skip if → Lab Test Card → 目录 → 正文）
+ * §61 编辑元数据（作者 / 测试日期 / 更新日期 / 样品来源）
+ */
+import Base from './Base.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import Toc from '../components/Toc.astro';
+import JsonLd from '../components/JsonLd.astro';
+import AffiliateDisclosure from '../components/AffiliateDisclosure.astro';
+import ProductPicks from '../components/ProductPicks.astro';
+import ProductPick from '../components/ProductPick.astro';
+import ProductHero from '../components/ProductHero.astro';
+import LabTestCard from '../components/LabTestCard.astro';
+import BestForSkipIf from '../components/BestForSkipIf.astro';
+import CategoryRatings from '../components/CategoryRatings.astro';
+import MethodologyBox from '../components/MethodologyBox.astro';
+import RelatedContent from '../components/RelatedContent.astro';
+import AuthorBox from '../components/AuthorBox.astro';
+import Newsletter from '../components/Newsletter.astro';
+import TestedBadge from '../components/TestedBadge.astro';
+import { PILLAR, SITE_NAME } from '../data/site';
+
+interface Props {
+  entry: any;
+  headings: { depth: number; slug: string; text: string }[];
+  route: string;
+  canonical: string;
+  /** §55(18) related 的 URL 已由页面层解析成标题 */
+  relatedResolved?: { href: string; label: string; kind?: string }[];
+}
+const { entry, headings, route, canonical, relatedResolved = [] } = Astro.props;
+const d = entry.data;
+const collection = entry.collection as string;
+
+const pillar = PILLAR[collection] ?? { label: 'Guides', href: '/guides/' };
+const crumbs = [
+  { label: 'Home', href: '/' },
+  ...(route.includes('/') ? [{ label: pillar.label, href: pillar.href }] : []),
+  { label: d.h1, href: `/${route}/` },
+];
+
+// §42(4) 商业页判定。`for`（发质页）也纳入 —— 它们同样含联盟外链并推荐产品，
+// §37 要求披露出现在页首或正文前，页脚披露属弱合规。
+const isCommercial = ['best', 'review', 'compare', 'ca', 'for'].includes(collection);
+// §18 对比类内容使用 1080px，其余编辑内容 780px
+const widthClass = collection === 'compare' ? 'wrap-compare' : 'wrap-article';
+
+/**
+ * §29 Lab Test Card 的缺省行 —— 我们尚未完成任何台架实测，
+ * 因此默认渲染协议项 +「Not yet tested」，而不是编造数值。
+ * 单位统一按 §49 写进标签，避免出现 "Not yet tested min:sec" 这种读法。
+ */
+const DEFAULT_LAB_METRICS = [
+  { label: 'Dry time (min:sec)', value: 'Not yet tested' },
+  { label: 'Noise (dB @ 1 m)', value: 'Not yet tested' },
+  { label: 'Weight (g)', value: 'Not yet tested' },
+  { label: 'Outlet temperature (°C)', value: 'Not yet tested' },
+  { label: 'Cord length (m)', value: 'Not yet tested' },
+  { label: 'Power (W)', value: 'Not yet tested' },
+];
+
+// §61 编辑元数据
+const metaLine = [
+  d.tested ? `Tested ${d.tested}` : null,
+  d.source ? `Product source: ${d.source}` : null,
+].filter(Boolean);
+---
+<Base
+  title={d.title}
+  description={d.description}
+  canonical={canonical}
+  ogType="article"
+  published={d.published}
+  updated={d.updated}
+>
+  <Fragment slot="head">
+    <JsonLd
+      title={d.title}
+      description={d.description}
+      canonical={canonical}
+      schema={d.schema}
+      published={d.published}
+      updated={d.updated}
+      author={d.author}
+      faq={d.faq}
+      products={d.products ?? []}
+      breadcrumbs={crumbs}
+    />
+  </Fragment>
+
+  <div class={widthClass}>
+    <Breadcrumbs items={crumbs} />
+
+    <main>
+      {/* §42(2) H1 */}
+      <h1>{d.h1}</h1>
+
+      {/* §42(3) 一行结论 + 徽章 */}
+      {d.verdict && <p class="lede">{d.verdict}</p>}
+      <p class="meta-line">
+        <TestedBadge kind="tested" />
+        {d.updated && <> <TestedBadge kind="updated" text={`Updated ${d.updated}`} /></>}
+      </p>
+
+      {/* §42(4) 联盟披露（§37 标准文案） */}
+      {isCommercial && <AffiliateDisclosure />}
+
+      {/* §61 编辑元数据 */}
+      {metaLine.length > 0 && (
+        <p class="meta-line">
+          Tested by {SITE_NAME}. {metaLine.join(' · ')}
+        </p>
+      )}
+
+      {/* §42(5) Product Hero —— 首选产品块（§41：首屏内要看到产品名与价格 CTA） */}
+      {isCommercial && d.products?.length ? (
+        <ProductHero
+          name={d.products[0].name}
+          asin={d.products[0].asin}
+          priceCAD={d.products[0].priceCAD}
+          rating={d.products[0].rating}
+          ratingCount={d.products[0].ratingCount}
+          bestFor={d.bestFor}
+          eyebrow={d.products[0].bestFor ?? 'Our pick'}
+          affiliateUrl={d.products[0].affiliateUrl}
+        />
+      ) : null}
+
+      {/* §42(6) Best for / Skip if —— 替代「Overall Winner」（§32） */}
+      {d.bestFor && d.skipIf ? <BestForSkipIf bestFor={d.bestFor} skipIf={d.skipIf} /> : null}
+
+      {/* §29 Lab Test Card —— 品牌标志性 UI 元素。无实测数据时诚实标注未测 */}
+      {isCommercial ? (
+        <LabTestCard
+          product={d.labTest?.product ?? d.h1}
+          metrics={d.labTest?.metrics ?? DEFAULT_LAB_METRICS}
+          tested={d.labTest?.tested}
+        />
+      ) : null}
+
+      {/* §31 分类结论 —— 替代数字总分，有实测值时同时给出数值 */}
+      {d.ratings?.length ? <CategoryRatings items={d.ratings} /> : null}
+
+      {/* §26 产品图卡：让用户在首屏内看到产品与关键数值（§41） */}
+      {isCommercial && d.products?.length ? <ProductPicks products={d.products} /> : null}
+
+      <Toc headings={headings} />
+
+      <article>
+        <slot />
+      </article>
+
+      {/*
+        §31 / §42 商业 CALL TO ACTION 与编辑结论分离。
+        这一节同时解决两个缺陷：
+          1. 顶部「Top picks」卡片的 #ASIN 锚点此前无处可去（页面上没有对应 id）
+          2. frontmatter 的 products[].affiliateUrl 此前没有任何组件渲染
+        ProductPick 输出 id={asin} 与 rel="sponsored nofollow noopener" 外链。
+      */}
+      {isCommercial && d.products?.length ? (
+        <section class="where-to-buy">
+          <h2 id="where-to-buy">Where to buy</h2>
+          <p class="small muted">
+            Prices shown are approximate figures from our own research, not live retailer
+            pricing — always check the current price on the retailer page. We may earn a
+            commission if you buy through these links; see our
+            <a href="/affiliate-disclosure/">affiliate disclosure</a>.
+          </p>
+          {d.products.map((p: any) => (
+            <ProductPick
+              asin={p.asin}
+              name={p.name}
+              priceCAD={p.priceCAD}
+              rating={p.rating}
+              ratingCount={p.ratingCount}
+              affiliateUrl={p.affiliateUrl}
+            />
+          ))}
+        </section>
+      ) : null}
+
+      {/* §55(14) Methodology Box —— 把方法与来源讲清楚，与商业内容分开（§51/§72） */}
+      {isCommercial ? <MethodologyBox /> : null}
+
+      {/* §55(18) Related Content —— 来自 frontmatter 的 related（标题由页面层解析） */}
+      <RelatedContent items={relatedResolved} />
+
+      {/* §55(22) Newsletter —— 仅在 frontmatter 显式开启时渲染。未接入邮件服务前显示诚实说明而非假表单 */}
+      {d.newsletter ? <Newsletter /> : null}
+
+      {/* §55(19) Author Box —— 替代原来的单行 byline；不虚构资历（§74） */}
+      <AuthorBox author={d.author} updated={d.updated} hasAffiliate={isCommercial} />
+    </main>
+  </div>
+</Base>

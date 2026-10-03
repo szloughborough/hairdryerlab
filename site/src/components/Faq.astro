@@ -1,0 +1,19 @@
+---
+/**
+ * FAQ 区块（可选组件）
+ * 用原生 <details> 折叠，内容**服务端渲染进 DOM** —— 折叠只是视觉隐藏，
+ * 不依赖点击后请求，因此对爬虫与大模型完全可见。
+ * 注意：JSON-LD 的 FAQ 来自 frontmatter，必须与本组件/正文文字逐字一致。
+ */
+interface Faq { q: string; a: string }
+interface Props { items: Faq[] }
+const { items } = Astro.props;
+---
+<div class="faq">
+  {items.map((f) => (
+    <details>
+      <summary>{f.q}</summary>
+      <div class="answer">{f.a}</div>
+    </details>
+  ))}
+</div>

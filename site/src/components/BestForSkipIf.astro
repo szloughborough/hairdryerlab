@@ -1,0 +1,15 @@
+---
+/** §6 / §30 / §32 Best for / Skip if —— 替代「Overall Winner」 */
+interface Props { bestFor: string; skipIf: string }
+const { bestFor, skipIf } = Astro.props;
+---
+<div class="verdict-split">
+  <div class="verdict-split__box verdict-split__box--best">
+    <p class="verdict-split__label">Best for</p>
+    <p class="verdict-split__text">{bestFor}</p>
+  </div>
+  <div class="verdict-split__box verdict-split__box--skip">
+    <p class="verdict-split__label">Skip if</p>
+    <p class="verdict-split__text">{skipIf}</p>
+  </div>
+</div>

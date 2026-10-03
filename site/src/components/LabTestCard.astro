@@ -1,0 +1,35 @@
+---
+/**
+ * §29 核心品牌组件 —— Lab Test Card
+ * 全站最易识别的 UI 元素。Ice Blue 底、navy 标题、数字右对齐、细边框、无装饰。
+ * §49 单位必须统一（min:sec / dB @ 1 m / g / °C / m / W）
+ */
+interface Metric { label: string; value: string; unit?: string }
+interface Props {
+  product: string;
+  metrics: Metric[];
+  tested?: string;
+  unit?: string;
+  href?: string;
+}
+const { product, metrics, tested, unit = 'Review sample', href = '/how-we-test/' } = Astro.props;
+---
+<aside class="lab-test">
+  <p class="lab-test__label">Lab Test</p>
+  <hr class="lab-test__rule" />
+  <p class="lab-test__product">{product}</p>
+
+  <div class="lab-test__rows">
+    {metrics.map((m) => (
+      <div class="lab-test__row">
+        <span class="lab-test__k">{m.label}</span>
+        <span class="lab-test__v">{m.value}{m.unit ? ` ${m.unit}` : ''}</span>
+      </div>
+    ))}
+  </div>
+
+  {tested && <p class="lab-test__meta">Tested: {tested}</p>}
+  {unit && <p class="lab-test__meta">Unit: {unit}</p>}
+
+  <a class="lab-test__link" href={href}>See how we test →</a>
+</aside>

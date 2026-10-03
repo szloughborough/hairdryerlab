@@ -1,0 +1,43 @@
+---
+import { ANALYTICS } from '../data/site';
+interface Props {
+  title: string;
+  description: string;
+  canonical: string;
+  type?: string;
+  published?: string;
+  updated?: string;
+  image?: string;
+}
+const { title, description, canonical, type = 'website', published, updated, image } = Astro.props;
+// OG 图使用 PNG（多数平台不解析 SVG OG 图）；由正式 logo lockup 生成，见 _scripts/logo_process.py
+const ogImage = image ?? `${Astro.site?.origin ?? ''}/brand/og-default.png`;
+// 标题里若已含品牌名，就不再追加，避免出现「… — Hair Dryer Lab — Hair Dryer Lab」
+const ogImageAlt = title.includes('Hair Dryer Lab') ? title : `${title} — Hair Dryer Lab`;
+---
+<title>{title}</title>
+<meta name="description" content={description} />
+<link rel="canonical" href={canonical} />
+
+{/* 搜索引擎站长验证 —— 全站注入，ID 见 src/data/site.ts 的 ANALYTICS */}
+<meta name="google-site-verification" content={ANALYTICS.googleSiteVerification} />
+<meta name="msvalidate.01" content={ANALYTICS.bingVerification} />
+
+<meta property="og:type" content={type} />
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:url" content={canonical} />
+<meta property="og:image" content={ogImage} />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content={ogImageAlt} />
+<meta property="og:site_name" content="Hair Dryer Lab" />
+<meta property="og:locale" content="en_CA" />
+
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={title} />
+<meta name="twitter:description" content={description} />
+<meta name="twitter:image" content={ogImage} />
+
+{published && <meta property="article:published_time" content={published} />}
+{updated && <meta property="article:modified_time" content={updated} />}

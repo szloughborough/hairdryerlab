@@ -1,0 +1,60 @@
+---
+/**
+ * §55(22) Newsletter / email capture
+ *
+ * ⚠️ 未接入邮件服务前**不渲染表单**。
+ *
+ * 理由：渲染一个输入框却提交不到任何地方，就是一个假控件 ——
+ * 既骗读者，也会让隐私政策出现虚假陈述（政策里若声称运营邮件列表，
+ * 就必须真的运营）。当前 LEGAL 与 Privacy Policy 均写明
+ * 「No newsletter. We do not operate a mailing list」。
+ *
+ * 接入步骤（三步都要做，缺一不可）：
+ *   1. 在 site.ts 里配置 NEWSLETTER.endpoint（服务商提供的表单提交地址）
+ *   2. 更新 /privacy-policy/：加入邮件服务商、所收集字段、用途、退订方式
+ *   3. 确认 LEGAL.analytics 之外还需披露该服务商为数据处理方
+ * 完成后把下面 SHOW_FORM 改为 true。
+ */
+import { SITE_NAME } from '../data/site';
+
+interface Props {
+  title?: string;
+}
+const { title = `Get new test results from ${SITE_NAME}` } = Astro.props;
+
+/** 邮件服务未接入前保持 false —— 不要把假表单放上线 */
+const SHOW_FORM = false;
+---
+
+<aside class="signup">
+  <p class="signup__title">{title}</p>
+
+  {SHOW_FORM ? (
+    <>
+      <p class="signup__text">
+        We will email you when we publish measured results. No promotions, no retailer offers.
+      </p>
+      <form class="signup__form" method="post" action="#">
+        <label class="small muted" for="signup-email">Email address</label>
+        <input class="signup__input" id="signup-email" name="email" type="email" required />
+        <button class="cta" type="submit">Subscribe</button>
+      </form>
+      <p class="signup__note">
+        We use your address only to send updates. Unsubscribe at any time.
+        See our <a href="/privacy-policy/">privacy policy</a>.
+      </p>
+    </>
+  ) : (
+    <>
+      <p class="signup__text">
+        We do not run a mailing list yet. There is no sign-up form here because we will not show you
+        an input box that leads nowhere.
+      </p>
+      <p class="signup__note">
+        When measured results are published, this page will say so. In the meantime, our
+        <a href="/how-we-test/">methodology page</a> explains what we will measure and why we have not
+        measured it yet.
+      </p>
+    </>
+  )}
+</aside>
