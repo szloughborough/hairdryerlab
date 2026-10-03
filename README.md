@@ -68,9 +68,8 @@ python _scripts/launch_audit.py         # 上线就绪审计
 
 ## 部署到 Cloudflare
 
-> **遇到构建问题先看 [deploy/cloudflare.md](deploy/cloudflare.md)** —— 里面有 Workers 与 Pages 两条路径的完整配置和排错顺序。
-
-## 部署到 Cloudflare Pages
+> **部署步骤与排错见 [deploy/cloudflare.md](deploy/cloudflare.md)。**
+> 已确定使用 Cloudflare **Pages**。Workers 路径失败过两次（原因也记在那份文档里）。
 
 ### 架构说明：构建期不需要任何密钥
 
@@ -80,22 +79,33 @@ python _scripts/launch_audit.py         # 上线就绪审计
 
 改动联盟链接后需要本地重跑 `pnpm affiliate:sync` 并提交生成的文件。
 
-### Cloudflare Pages 配置
+### 项目设置
 
-在 Cloudflare Dashboard → Workers & Pages → Create → Pages → **Connect to Git**，
-选择本仓库，然后按下表填写：
+**Workers & Pages → Create application → Pages → Connect to Git**，选本仓库，按下表填：
 
 | 配置项 | 值 |
 |---|---|
 | Production branch | `main` |
 | Framework preset | `Astro` |
-| **Root directory** | `site` |
+| **Root directory** | **`site`** |
 | Build command | `pnpm build` |
 | Build output directory | `dist` |
-| 环境变量 `NODE_VERSION` | `22` |
 
-> `site/.nvmrc` 已写 `22`；若 Dashboard 未读取，请显式设置 `NODE_VERSION=22`。
-> Astro 5 要求 Node `18.20.8 \|\| ^20.3.0 \|\| >=22.0.0`。
+**Settings → Environment variables：**
+
+| 变量 | 值 | 必要性 |
+|---|---|---|
+| `PNPM_VERSION` | `11.7.0` | **必需**，见下 |
+| `NODE_VERSION` | `22` | 可选（`site/.nvmrc` 已写 `22`） |
+
+> ⚠️ **`PNPM_VERSION` 不能省。** Cloudflare Pages v3 构建镜像的官方限制明确写着
+> 不检测 `pnpm-lock.yaml` 的版本、也不从 `package.json` 的 `engines` 推断包管理器，
+> 所以会用镜像自带的旧版 pnpm。而本项目 `site/pnpm-workspace.yaml` 用的是
+> **pnpm 11 的配置语法**（`allowBuilds` / `verifyDepsBeforeRun`），版本不匹配会导致
+> 构建报 `Cannot find module 'html-escaper'`。
+
+> ⚠️ **Root directory 必须填 `site`。** 仓库根目录没有 `package.json`（它在 `site/`）。
+> 留空会让 Cloudflare 检测不到 Node/pnpm，构建直接失败。
 
 ### 绑定域名
 
