@@ -13,7 +13,7 @@ import TestedBadge from '../components/TestedBadge.astro';
 import {
   SITE_URL, SITE_NAME, BRAND_STATEMENT, SITE_DESCRIPTION, SITE_META_DESCRIPTION,
 } from '../data/site';
-import { approxPrice, PRICE_NOTE } from '../data/products';
+import { approxPrice, PRICE_NOTE, PRODUCT_IMAGES } from '../data/products';
 
 /** §27 按发质 —— 具体发质指南撰写中，此处先指向栏目页 */
 const HAIR_TYPES_SUMMARY = 'Curly · Fine · Thick · Frizzy';
@@ -78,8 +78,25 @@ const FEATURED = [
       <div class="picks-grid">
         {MODELS.map((m) => (
           <a class="pick-card" href={m.href}>
+            {/*
+              §26 / §68 产品卡 4:5。此前这里只渲染了产品名文字，没有 <img>，
+              导致首页五张卡片全部没有图片（CSS 一直就绪：.pick-card-media 已定义
+              aspect-ratio: 4/5 与 img 的 object-fit: contain，只是标记里没用）。
+              图片来自 PRODUCT_IMAGES（由 PRODUCTS 派生），与正文产品卡同一数据源。
+            */}
             <div class="pick-card-media">
-              <span class="small muted">{m.name}</span>
+              {PRODUCT_IMAGES[m.asin] ? (
+                <img
+                  src={PRODUCT_IMAGES[m.asin].image}
+                  alt={PRODUCT_IMAGES[m.asin].imageAlt}
+                  width="600"
+                  height="600"
+                  loading="lazy"
+                  decoding="async"
+                />
+              ) : (
+                <span class="small muted">{m.name}</span>
+              )}
             </div>
             <div class="pick-card-body">
               <TestedBadge kind="tested" />
