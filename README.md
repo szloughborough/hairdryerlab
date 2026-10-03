@@ -69,7 +69,8 @@ python _scripts/launch_audit.py         # 上线就绪审计
 ## 部署到 Cloudflare
 
 > **部署步骤与排错见 [deploy/cloudflare.md](deploy/cloudflare.md)。**
-> 已确定使用 Cloudflare **Pages**。Workers 路径失败过两次（原因也记在那份文档里）。
+> 走 Cloudflare **Workers** 路径 —— Dashboard 的 `Create application` 已不再提供
+> Pages 标签（入口合并到 Workers 的 Connect to Git），因此 Workers 是唯一可用路径。
 
 ### 架构说明：构建期不需要任何密钥
 
