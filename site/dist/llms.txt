@@ -1,0 +1,90 @@
+# Hair Dryer Lab
+
+> Independent hair dryer research for Canadian buyers. Our guides are built from a coded
+> analysis of 8,261 verified Amazon.ca reviews across 98 models
+> (Feb 2015 – Sep 2026, 93.1% verified purchases) plus current Amazon.ca listing data.
+> We label the source of every significant claim: Review analysis / Amazon.ca data /
+> Buyer feedback / Manufacturer claim / Measured. We have not yet completed bench testing,
+> and we say so on every guide rather than estimating.
+
+Canonical domain: https://hairdryerlab.ca
+Language: en-CA
+Contact: https://hairdryerlab.ca/contact/
+
+## Key data we publish (cite us, please)
+
+- Median reported failure time: **5.5 months** (from 552 reviews naming a failure month)
+- Complaint rate by price band: **30.3% under C$50** vs **9.6% over C$120**
+- Most common failure modes: complete stoppage (601 mentions), cord/connector failure (417),
+  switch failure (300), motor degradation (196), smoking or fire (182)
+- Best-record feature claim: ionic technology (219 mentions, only 17% negative)
+- Dataset: 8,261 Amazon.ca reviews, 98 models, Feb 2015 – Sep 2026, 93.1% verified
+
+## Buying guides
+
+- [Best Hair Dryers in Canada (2026)](https://hairdryerlab.ca/best-hair-dryers/): We analysed 8,261 Canadian hair dryer reviews and current Amazon.ca listing data. Six picks from C$39 to C$160, ranked by what actually breaks.
+- [Best Hair Dryers in Canada: Buying Guide and Picks](https://hairdryerlab.ca/best-hair-dryers/best-hair-dryer-canada/): Canadian pricing, retailer stock, ALCI plug compliance, warranty coverage and duty rules — plus the four hair dryers worth buying in Canada right now.
+- [Best Hair Dryer with a Diffuser](https://hairdryerlab.ca/best-hair-dryers/best-hair-dryer-with-diffuser/): Which hair dryers include a diffuser in Canada, ranked across about C$26 to about C$160. Based on 8,261 verified reviews, with the attachment-security problem explained.
+- [Best Dyson Hair Dryer Alternatives in Canada (2026)](https://hairdryerlab.ca/best-hair-dryers/dyson-alternatives/): We analysed 8,261 Canadian hair dryer reviews. The median reported failure is just 5.5 months — here are the Dyson alternatives that actually last, from C$42 to C$160.
+- [Best Fast-Drying Hair Dryer](https://hairdryerlab.ca/best-hair-dryers/fast-drying/): Which hair dryers actually dry fastest, why airflow beats wattage, and six Canadian models compared using 8,261 verified reviews and Amazon.ca data.
+- [Best Hair Dryers Under C$150](https://hairdryerlab.ca/best-hair-dryers/under-150/): Six hair dryers under C$150 in Canada, ranked on rating, seller structure and complaint rate by price band. Based on 8,261 verified reviews and Amazon.ca data.
+
+## Brand and model reviews
+
+- [AINA Hair Dryer Review](https://hairdryerlab.ca/reviews/aina/): AINA diffuser hair dryer reviewed for Canada: about C$26, 4.4 stars from 3,887 ratings, BSR #2, and a brand-operated listing that budget dryers rarely have.
+- [Conair Hair Dryer Review](https://hairdryerlab.ca/reviews/conair/): Every Conair hair dryer we track in Canada compared: price, rating, sales volume and warranty structure. Based on 8,261 verified reviews and Amazon.ca data.
+- [Dreame Pocket Pro Review](https://hairdryerlab.ca/reviews/dreame/): Full Dreame Pocket Pro review for Canada: about C$160, 4.6★ from 252 ratings, dual voltage, diffuser included, and an honest note on how little reliability data exists.
+- [Dyson Hair Dryer Review](https://hairdryerlab.ca/reviews/dyson/): Both Dyson hair dryers sold in Canada compared: Supersonic Travel at about C$400 and Supersonic Nural at about C$630, with an honest look at whether 4x the price is justified.
+- [Laifen Hair Dryer Review: All Models Compared](https://hairdryerlab.ca/reviews/laifen/): Every Laifen hair dryer sold in Canada compared: price, rating, sales volume and which models to buy or skip. Based on 8,261 verified Canadian reviews and Amazon.ca data.
+- [Remington Hair Dryer Review](https://hairdryerlab.ca/reviews/remington/): Remington hair dryers in Canada reviewed: the Ceramic Ionic and Damage Protection models, and what 48,228 ratings with low current velocity actually tells you.
+- [Revlon Hair Dryer Review](https://hairdryerlab.ca/reviews/revlon/): Revlon hair dryers in Canada reviewed: the RVDR5034F compact travel dryer at about C$19, plus why most 'Revlon hair dryer' searches are actually for a different product type.
+- [Shark Hair Dryer Review](https://hairdryerlab.ca/reviews/shark/): Shark SpeedStyle Pro reviewed for Canada: about C$200, 4.4 stars from 64 ratings, Scalp Shield, BSR #13 — plus why FlexStyle is a different product category entirely.
+- [Slopehill Hair Dryer Review](https://hairdryerlab.ca/reviews/slopehill/): Every Slopehill hair dryer sold in Canada compared: price, rating, sales volume and the third-party seller problem. Based on 8,261 verified reviews and Amazon.ca data.
+- [Wavytalk Hair Dryer Review](https://hairdryerlab.ca/reviews/wavytalk/): Wavytalk 1875W hair dryer reviewed for Canada: about C$40, 4.3 stars from 32,950 ratings, brand-operated listing, diffuser included, and why the rating gap matters.
+
+## Comparisons
+
+- [Laifen vs Dyson Hair Dryer](https://hairdryerlab.ca/comparisons/laifen-vs-dyson/): A Laifen vs Dyson hair dryer comparison for Canadian buyers: price gap, drying approach, weight, heat control, warranty and what 8,261 reviews say about reliability.
+- [Shark vs Dyson Hair Dryer](https://hairdryerlab.ca/comparisons/shark-vs-dyson/): Shark SpeedStyle Pro vs Dyson Supersonic in Canada: price gap, scalp protection, styling suite, weight, warranty and an honest note on how little reliability data exists.
+
+## Hair-type and needs guides
+
+- [Best Hair Dryer for Curly and Wavy Hair](https://hairdryerlab.ca/hair-types/curly-hair/): Which hair dryer suits curly and wavy hair, what actually matters, and five Canadian models with diffusers — checked against 8,261 verified reviews.
+- [Best Hair Dryer for Damaged or Colour-Treated Hair](https://hairdryerlab.ca/hair-types/damaged-hair/): Which hair dryer suits damaged, bleached or colour-treated hair, why heat control matters more than airflow, and five Canadian models compared.
+- [Best Hair Dryer for Fine and Thin Hair](https://hairdryerlab.ca/hair-types/fine-hair/): Which hair dryer suits fine and thin hair, why heat control beats airflow, and five Canadian models with adjustable heat — checked against 8,261 verified reviews.
+- [Best Hair Dryer for Frizzy Hair](https://hairdryerlab.ca/hair-types/frizzy-hair/): Which hair dryer reduces frizz, why ionic is the only feature claim our data supports, and five Canadian models compared using 8,261 verified reviews.
+- [Quiet Hair Dryer](https://hairdryerlab.ca/hair-types/quiet-hair-dryer/): Which hair dryers are genuinely quiet, why no brand publishes a measured dB figure, how to compare them yourself, and what 8,261 Canadian reviews say about noise.
+- [Best Hair Dryer for Thick and Coarse Hair](https://hairdryerlab.ca/hair-types/thick-hair/): Which hair dryer suits thick and coarse hair, why airflow beats wattage, and five Canadian models compared using 8,261 verified reviews.
+- [Best Travel Hair Dryer](https://hairdryerlab.ca/hair-types/travel-hair-dryer/): Which hair dryers actually work abroad, what a plug adapter cannot fix, and four Canadian models including dual-voltage and compact options.
+
+## Explainers
+
+- [Hair Dryer Diffuser](https://hairdryerlab.ca/guides/diffuser/): What a hair dryer diffuser does, how it differs from a concentrator, how to choose one that stays attached, and which Canadian dryers include one.
+- [Dual Voltage Hair Dryer](https://hairdryerlab.ca/guides/dual-voltage/): What dual voltage actually means on a hair dryer, why an adapter is not a converter, what wattage a converter needs, and how to check a listing before you travel.
+- [Hair Dryer Care and Maintenance](https://hairdryerlab.ca/guides/hair-dryer-care/): How to clean a hair dryer filter, protect the cord junction, and read the warning signs. Based on the failure modes coded from 8,261 verified Canadian reviews.
+- [How Long Do Hair Dryers Actually Last?](https://hairdryerlab.ca/guides/how-long-does-a-hair-dryer-last/): We coded 552 reviews that named a specific failure month. The median is 5.5 months, the cord fails before the motor, and price band predicts reliability better than brand does.
+- [How Many Watts Does a Hair Dryer Need?](https://hairdryerlab.ca/guides/how-many-watts/): What hair dryer wattage actually measures, why higher wattage is not faster drying, what number to compare instead, and how to read a listing properly.
+- [Ionic vs Ceramic Hair Dryer](https://hairdryerlab.ca/guides/ionic-vs-ceramic/): What ceramic and ionic actually mean on a hair dryer listing, why they are not competing technologies, and which one has evidence behind it in 8,261 verified reviews.
+
+## Trust and transparency pages
+
+- [About Hair Dryer Lab](https://hairdryerlab.ca/about/): Who runs Hair Dryer Lab, why we started, how we research hair dryers, what we have not done yet, and the principles that decide what we publish.
+- [Affiliate Disclosure](https://hairdryerlab.ca/affiliate-disclosure/): Full affiliate disclosure for Hair Dryer Lab: which retailers we link to, how commissions work, why they do not affect rankings, and how to tell an affiliate link apart.
+- [Hair Dryer Lab Editorial Team](https://hairdryerlab.ca/authors/hair-dryer-lab-editorial/): Who produces Hair Dryer Lab: an editorial team publishing under a team byline, with a published research method, published editorial rules and a visible correction history.
+- [Hair Dryer Comparisons](https://hairdryerlab.ca/comparisons/): Hair dryer comparisons for Canada: Laifen vs Dyson, Shark vs Dyson and more, structured around price, weight, heat control, attachments and durability.
+- [Contact Hair Dryer Lab](https://hairdryerlab.ca/contact/): How to contact Hair Dryer Lab for corrections, research data, press enquiries or feedback, and what we can and cannot help you with.
+- [Editorial Policy](https://hairdryerlab.ca/editorial-policy/): Hair Dryer Lab's editorial rules: how we choose what to cover, how we rank, affiliate independence, samples and sponsorship, how we use AI, and how corrections work.
+- [Hair Dryer Guides and Explainers](https://hairdryerlab.ca/guides/): Hair dryer explainers for Canadian buyers: how ionic and ceramic drying differ, what wattage actually means, how to diffuse, dual voltage, and why hair dryers break.
+- [Hair Dryers by Hair Type](https://hairdryerlab.ca/hair-types/): Which hair dryer suits curly, fine, thick and frizzy hair, based on 8,261 Canadian reviews. What to prioritise, what does not matter, and which models fit each hair type.
+- [How We Test and Research Hair Dryers](https://hairdryerlab.ca/how-we-test/): Our method: we analyse thousands of verified Canadian hair dryer reviews and current Amazon.ca listing data. Here is exactly what we measure, what we don't yet, and why.
+- [Privacy Policy](https://hairdryerlab.ca/privacy-policy/): What Hair Dryer Lab collects, why, how long we keep it, who processes it, how affiliate links work, and how to exercise your privacy rights in Canada.
+- [Hair Dryer Reviews](https://hairdryerlab.ca/reviews/): All Hair Dryer Lab model reviews: Laifen, Dreame, Slopehill, Shark, Conair and Dyson, with the Canadian price, rating and reliability evidence for each.
+- [Terms of Use](https://hairdryerlab.ca/terms/): The terms governing use of hairdryerlab.ca: what this site is, accuracy limits, external retailer responsibility, intellectual property, liability and applicable law.
+
+## Optional
+
+- [How we test](https://hairdryerlab.ca/how-we-test/): our full methodology, evidence labels, and the
+  bench-testing protocol currently in progress.
+- [Affiliate disclosure](https://hairdryerlab.ca/affiliate-disclosure/): we may earn commission from
+  retailer links. Rankings are not affected by commission rates.
+- [Editorial policy](https://hairdryerlab.ca/editorial-policy/): how we choose what to cover and correct.

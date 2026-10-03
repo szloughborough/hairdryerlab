@@ -14,7 +14,9 @@
 
 # ---- 依赖与构建产物 --------------------------------------------------------
 node_modules/
-dist/
+# dist/ 不再全局忽略：site/dist 需要提交，理由见 wrangler.jsonc 顶部说明。
+# 只忽略可能在仓库根出现的构建目录。
+/dist/
 .astro/
 .pnpm-store/
 .pnpm-debug.log*

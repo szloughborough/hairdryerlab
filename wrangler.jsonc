@@ -1,0 +1,31 @@
+{
+  // ── 这个文件让部署在「零 Dashboard 设置」下也能工作 ──────────────────────
+  //
+  // 背景：Cloudflare Workers Builds 的构建设置（Root directory / Build command）
+  // 在 Dashboard 里不容易找到，导致部署反复失败。本文件把构建产物直接交给
+  // wrangler，从而**不需要任何 Dashboard 构建配置**：
+  //
+  //   Cloudflare 的默认部署命令 `npx wrangler deploy` 在仓库根目录执行
+  //   → 读取本文件
+  //   → 上传 site/dist 下已构建好的静态文件
+  //
+  // 因此 site/dist 必须已提交到仓库（见 .gitignore 中的说明）。
+  // 内容改动后需本地重新构建并提交，脚本：node _scripts/deploy_prepare.mjs
+  //
+  // ── 兼容两种 Dashboard 配置 ──────────────────────────────────────────────
+  //   未设 Root directory（当前情况）→ 用本文件，assets 指向 ./site/dist
+  //   若日后设了 Root directory=site  → wrangler 会改用 site/wrangler.jsonc
+  //                                       （assets 指向 ./dist），同样可用
+  //
+  // ⚠️ name 必须与 Cloudflare 上的 Worker 名完全一致，否则构建失败。官方原文：
+  //   the Worker name in the Cloudflare dashboard must match the `name` in the
+  //   Wrangler configuration file ... or the build will fail.
+  "$schema": "./site/node_modules/wrangler/config-schema.json",
+  "name": "hairdryerlab",
+  "compatibility_date": "2026-10-03",
+  "assets": {
+    "directory": "./site/dist",
+    "not_found_handling": "404-page",
+    "html_handling": "auto-trailing-slash"
+  }
+}

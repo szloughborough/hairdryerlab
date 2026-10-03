@@ -1,5 +1,7 @@
 node_modules/
-dist/
+# dist/ 刻意不忽略：Cloudflare 在零构建配置下直接部署已提交的产物。
+# 内容改动后运行 `node _scripts/deploy_prepare.mjs` 重新构建并暂存。
+# dist/
 .astro/
 .env
 .env.production
