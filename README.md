@@ -66,6 +66,10 @@ python _scripts/launch_audit.py         # 上线就绪审计
 
 ---
 
+## 部署到 Cloudflare
+
+> **遇到构建问题先看 [deploy/cloudflare.md](deploy/cloudflare.md)** —— 里面有 Workers 与 Pages 两条路径的完整配置和排错顺序。
+
 ## 部署到 Cloudflare Pages
 
 ### 架构说明：构建期不需要任何密钥
