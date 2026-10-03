@@ -1,49 +1,123 @@
 ---
 /**
  * 首页 —— 严格遵循品牌规范
- * §25 Hero（指定 H1 / 副标题 / 描述 / 双 CTA）
+ *
+ * §25 Hero（H1 / supporting headline / 描述 / 双 CTA / 主视觉）
  * §26 Tested & Compared
  * §27 Start With Your Hair
  * §28 Start With What Matters
- * §75 视觉优先级：信任 > 专业 > 测试 > 按需导航 > 商业 CTA
+ * §75 视觉优先级：信任 > 产品专业 > 测试 > 按需导航 > 商业 CTA
+ *
+ * 本次改版解决的问题（原版是把站点地图做成了卡片墙）：
+ *   1. **假声称**：原版给 5 张卡片都挂了 TestedBadge kind="tested"，
+ *      渲染出「Tested」徽章。本站尚未完成任何台架实测 —— 这是虚假声称。
+ *      现改为诚实的实测状态行（Not yet tested），与 §26 指定的卡片格式一致。
+ *   2. **没有主视觉**：§25 明确要求主视觉（2–3 台吹风机 + 测试工具的编辑式静物）。
+ *   3. **层级塌陷**：每个 section 的标题都是 13px 灰色大写标签，全页没有一个
+ *      34px 的 h2，所以通篇一样大、没有节奏。
+ *   4. **最重要的资产被埋掉**：本站唯一不可复制的东西是那 8,261 条编码评测，
+ *      原版首页一个数字都没出现。
+ *   5. **三个连续的同款卡片墙**：Start Here(9) / Hair(1) / Matters(1) 用同一个
+ *      pillar-card 组件，其中两个只放了一张卡，栅格里空着。
  */
 import Base from '../layouts/Base.astro';
 import JsonLd from '../components/JsonLd.astro';
-import TestedBadge from '../components/TestedBadge.astro';
 import {
   SITE_URL, SITE_NAME, BRAND_STATEMENT, SITE_DESCRIPTION, SITE_META_DESCRIPTION,
 } from '../data/site';
-import { approxPrice, PRICE_NOTE, PRODUCT_IMAGES } from '../data/products';
+import { PRODUCTS, approxPrice, PRICE_CHECKED, PRICE_NOTE } from '../data/products';
 
-/** §27 按发质 —— 具体发质指南撰写中，此处先指向栏目页 */
-const HAIR_TYPES_SUMMARY = 'Curly · Fine · Thick · Frizzy';
+/* ============================================================================
+   §25 Hero 主视觉 —— 编辑式静物
+   规范要求「2–3 hair dryers, testing tools, editorial still-life composition,
+   warm white or neutral background. Avoid beauty-model hero imagery.」
 
-/** §28 按需求 —— 对应 SEO 集群 */
-const NEEDS_SUMMARY =
-  'Fast drying · Quiet · Lightweight · Diffuser · Travel · Under C$150 · Premium · Dyson alternatives';
+   我们目前没有实拍静物。这里用**我们排名里真实在售的三台机器**（分别落在
+   预算 / 中端 / 高端三个价格带）做成一幅有意的编辑式组合，而不是拿图库照片
+   冒充。真实静物拍摄完成后，替换 HERO_STILL 的三个 asin 即可，排版不用动。
+   ========================================================================== */
+const HERO_STILL = [
+  { asin: 'B0C3M9WBQF', tag: 'Budget' },
+  { asin: 'B0GWHF4SHD', tag: 'Mid' },
+  { asin: 'B0F8QH8XHV', tag: 'Premium' },
+].map((x) => ({ ...x, ...PRODUCTS[x.asin] }));
 
-/** §26 Tested & Compared —— 卡片指向当前已发布的覆盖页面 */
-const MODELS = [
-  { name: 'Laifen Air', href: '/reviews/laifen/', asin: 'B0GWHF4SHD', priceCAD: 99.99, rating: '4.5★' },
-  { name: 'Laifen SE2', href: '/reviews/laifen/', asin: 'B0FPMBBG2J', priceCAD: 143.98, rating: '4.5★' },
-  { name: 'Dreame Pocket Pro', href: '/best-hair-dryers/', asin: 'B0F8QH8XHV', priceCAD: 159.99, rating: '4.6★' },
-  { name: 'Slopehill 1902', href: '/best-hair-dryers/', asin: 'B0C3M9WBQF', priceCAD: 42.99, rating: '4.5★' },
-  { name: 'Wavytalk 1875W', href: '/best-hair-dryers/', asin: 'B09JZ18GLJ', priceCAD: 39.99, rating: '4.3★' },
+/* ============================================================================
+   信任条 —— §75 把「信任」排在视觉优先级第一，所以它紧跟 Hero，
+   且用的是本站真正独家的一手数字，不是形容词。
+   ========================================================================== */
+const PROOF = [
+  { n: '8,261', unit: '', label: 'Canadian reviews coded by hand', sub: '98 models · 93.1% verified purchases' },
+  { n: '5.5', unit: 'months', label: 'Median reported failure', sub: 'Mean 6.0 · only 0.8% dead on arrival' },
+  { n: '9.6', unit: '%', label: 'Complaint rate over C$120', sub: 'Against 30.3% under C$50' },
+  { n: '84', unit: '%', label: 'Of durability mentions are negative', sub: 'The most negative topic in the category' },
 ];
 
-/** 已发布的核心内容（首页只链向真实存在的页面） */
-const FEATURED = [
-  { label: 'Best Hair Dryers in Canada', href: '/best-hair-dryers/', note: 'Six picks ranked on durability, C$39–160' },
-  { label: 'Best Under C$150', href: '/best-hair-dryers/under-150/', note: 'The C$120 line that changes the complaint rate' },
-  { label: 'Best Dyson Alternatives', href: '/best-hair-dryers/dyson-alternatives/', note: 'Five dupes, and which one survives' },
-  { label: 'Canada Buying Guide', href: '/best-hair-dryers/best-hair-dryer-canada/', note: 'CAD pricing, retailers, ALCI plug, warranty' },
-  { label: 'How Long Hair Dryers Last', href: '/guides/how-long-does-a-hair-dryer-last/', note: '5.5-month median, and every failure mode' },
-  { label: 'Hair Dryer Care', href: '/guides/hair-dryer-care/', note: 'The cord habit behind 417 failures' },
-  { label: 'Laifen Review — all 6 models', href: '/reviews/laifen/', note: 'Including the model we tell you to avoid' },
-  { label: 'Laifen vs Dyson', href: '/comparisons/laifen-vs-dyson/', note: 'Whether 4× the price buys 4× the dryer' },
-  { label: 'Shark vs Dyson', href: '/comparisons/shark-vs-dyson/', note: 'Half the price, with one feature advantage' },
+/* ============================================================================
+   §26 Tested & Compared
+   规范给的卡片格式是：product image · model · test status · 2–3 key test
+   metrics · review link。示例里的 metrics 是 Drying time / Noise / Weight。
+
+   我们**没有**这三项实测值，所以按同一格式填写真实状态：Not yet tested。
+   这不是退让 —— 把「还没测」明确写出来，正是本站区别于其他榜单站的地方。
+   三张卡分别覆盖低 / 中 / 高三个价格带，形成完整的价格叙事。
+   ========================================================================== */
+const MODEL_METRICS = [
+  { k: 'Drying time', u: 'min:sec' },
+  { k: 'Noise', u: 'dB @ 1 m' },
+  { k: 'Weight', u: 'g' },
+];
+
+const FEATURED_MODELS = [
+  { asin: 'B0C3M9WBQF', href: '/reviews/slopehill/', role: 'Best under C$50' },
+  { asin: 'B0GWHF4SHD', href: '/reviews/laifen/', role: 'Our pick for most people' },
+  { asin: 'B0F8QH8XHV', href: '/reviews/dreame/', role: 'Best if you travel' },
+].map((x) => ({ ...x, ...PRODUCTS[x.asin] }));
+
+/* ============================================================================
+   §27 Start With Your Hair
+   规范指定四个类目，并要求「authentic texture photography」。
+   我们没有真实发质摄影，§38 又禁止用图库照片冒充。
+   因此这里不做假的图片卡，改成**承载我们数据的排版式入口**：
+   每个发质给出「什么才真正重要」的一句结论，全部来自编码分析。
+   真实发质摄影到位后，把 tile 换成图片卡即可。
+   ========================================================================== */
+const HAIR_TYPES = [
+  { href: '/hair-types/curly-hair/', name: 'Curly Hair', line: 'A diffuser that stays attached beats peak airflow.', stat: '186 attachment mentions · 57% negative' },
+  { href: '/hair-types/fine-hair/', name: 'Fine Hair', line: 'Adjustable heat and scalp protection, not wattage.', stat: 'Heat mentions 1,093 · 54% negative' },
+  { href: '/hair-types/thick-hair/', name: 'Thick Hair', line: 'Airflow decides drying time. More heat backfires.', stat: 'Airflow is the #1 topic · 1,585 mentions' },
+  { href: '/hair-types/frizzy-hair/', name: 'Frizzy Hair', line: 'Ionic is the one feature claim our data supports.', stat: '219 mentions · only 17% negative' },
+];
+
+/* ============================================================================
+   §28 Start With What Matters —— 规范指定的 8 个需求入口，全部指向真实页面
+   ========================================================================== */
+const NEEDS = [
+  { href: '/best-hair-dryers/fast-drying/', label: 'Fast Drying' },
+  { href: '/hair-types/quiet-hair-dryer/', label: 'Quiet' },
+  { href: '/best-hair-dryers/', label: 'Lightweight' },
+  { href: '/best-hair-dryers/best-hair-dryer-with-diffuser/', label: 'Diffuser' },
+  { href: '/hair-types/travel-hair-dryer/', label: 'Travel' },
+  { href: '/best-hair-dryers/under-150/', label: 'Under C$150' },
+  { href: '/best-hair-dryers/', label: 'Premium' },
+  { href: '/best-hair-dryers/dyson-alternatives/', label: 'Dyson Alternatives' },
+];
+
+/** 已发布的核心内容 —— 编辑精选，不再铺成九宫格 */
+const EDITORS_PICKS = [
+  { label: 'Best Hair Dryers in Canada', href: '/best-hair-dryers/', note: 'Six picks ranked on what actually breaks, C$39–160' },
+  { label: 'How Long Hair Dryers Last', href: '/guides/how-long-does-a-hair-dryer-last/', note: 'The 5.5-month median, and every failure mode we coded' },
+  { label: 'Laifen vs Dyson', href: '/comparisons/laifen-vs-dyson/', note: 'Whether four times the price buys four times the dryer' },
+];
+
+/** 信任三栏（§75 第一优先级） */
+const TRUST = [
+  { h: 'What we do', p: 'We code verified Canadian reviews by hand and cross-check every listing figure. Every claim on this site carries its source label.' },
+  { h: 'What we have not done', p: 'We have not finished bench testing. Where a measured value belongs, we write "Not yet tested" instead of estimating it.' },
+  { h: 'How we get paid', p: 'We earn commission when you buy through our links. Commission rates are never an input to a ranking, and we say which brands cannot buy placement.' },
 ];
 ---
+
 <Base
   title={`${SITE_NAME} — Independent Hair Dryer Reviews for Canada`}
   description={SITE_META_DESCRIPTION}
@@ -59,104 +133,600 @@ const FEATURED = [
     />
   </Fragment>
 
-  <div class="wrap">
-    {/* ---------- §25 Hero ---------- */}
-    <section class="hero">
-      <h1>Find the right hair dryer.</h1>
-      <p class="lede">Based on testing, not hype.</p>
-      <p class="muted">{SITE_DESCRIPTION}</p>
-      <div class="hero-actions">
-        <a class="cta" href="/best-hair-dryers/">Find Your Hair Dryer</a>
-        <a class="cta cta--secondary" href="/how-we-test/">See How We Test</a>
+  {/* ==================== §25 Hero ==================== */}
+  <section class="hhero">
+    <div class="wrap hhero__inner">
+      <div class="hhero__copy">
+        <h1>Find the right hair dryer.</h1>
+        <p class="hhero__sub">Based on testing, not hype.</p>
+        <p class="hhero__desc">{SITE_DESCRIPTION}</p>
+        <div class="hhero__cta">
+          <a class="cta" href="/best-hair-dryers/">Find Your Hair Dryer</a>
+          <a class="cta cta--secondary" href="/how-we-test/">See How We Test</a>
+        </div>
+        <p class="hhero__note">{BRAND_STATEMENT}</p>
       </div>
-      <p class="small muted" style="margin-top:var(--s5);max-width:640px">{BRAND_STATEMENT}</p>
-    </section>
 
-    {/* ---------- §26 Tested & Compared ---------- */}
-    <section>
-      <h2 class="section-title">Tested &amp; Compared</h2>
-      <div class="picks-grid">
-        {MODELS.map((m) => (
-          <a class="pick-card" href={m.href}>
-            {/*
-              §26 / §68 产品卡 4:5。此前这里只渲染了产品名文字，没有 <img>，
-              导致首页五张卡片全部没有图片（CSS 一直就绪：.pick-card-media 已定义
-              aspect-ratio: 4/5 与 img 的 object-fit: contain，只是标记里没用）。
-              图片来自 PRODUCT_IMAGES（由 PRODUCTS 派生），与正文产品卡同一数据源。
-            */}
-            <div class="pick-card-media">
-              {PRODUCT_IMAGES[m.asin] ? (
-                <img
-                  src={PRODUCT_IMAGES[m.asin].image}
-                  alt={PRODUCT_IMAGES[m.asin].imageAlt}
-                  width="600"
-                  height="600"
-                  loading="lazy"
-                  decoding="async"
-                />
-              ) : (
-                <span class="small muted">{m.name}</span>
-              )}
+      {/*
+        §25 主视觉：编辑式静物。三台机器横跨预算 / 中端 / 高端三个价格带，
+        互有叠压，像一次拍摄而不是三张并排的商品图。
+        真实静物照片到位后替换 HERO_STILL 的 asin 即可。
+      */}
+      <figure class="hhero__still">
+        <div class="still">
+          {HERO_STILL.map((d, i) => (
+            <div class={`still__item still__item--${['l', 'c', 'r'][i]}`}>
+              <img src={d.image} alt={d.imageAlt} width="600" height="600" loading="eager" decoding="async" />
+              <span class="still__tag">{d.tag}</span>
             </div>
-            <div class="pick-card-body">
-              <TestedBadge kind="tested" />
-              <strong>{m.name}</strong>
-              <span class="small muted">{approxPrice(m.priceCAD)} · {m.rating}</span>
+          ))}
+        </div>
+        <figcaption class="hhero__cap">
+          The three price bands we rank across · figures checked {PRICE_CHECKED}
+        </figcaption>
+      </figure>
+    </div>
+  </section>
+
+  {/* ==================== 信任条（§75 第一优先级） ==================== */}
+  <section class="proof">
+    <div class="wrap">
+      <p class="proof__eyebrow">Every figure below comes from our own analysis, not a press release</p>
+      <dl class="proof__row">
+        {PROOF.map((s) => (
+          <div class="stat">
+            <dt class="stat__n">{s.n}<span class="stat__u">{s.unit}</span></dt>
+            <dd class="stat__l">
+              {s.label}
+              <span class="stat__sub">{s.sub}</span>
+            </dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+  </section>
+
+  <div class="wrap">
+    {/* ==================== §26 Tested & Compared ==================== */}
+    <section class="sec">
+      <header class="sec__head">
+        <p class="section-title">Tested &amp; Compared</p>
+        <h2 class="sec__h">Three dryers, three price bands</h2>
+        <p class="sec__p">
+          Bench testing is still in progress, so the metric rows below read
+          <strong>Not yet tested</strong>. We would rather show you an empty row than a
+          number we did not measure.
+        </p>
+      </header>
+
+      <div class="models">
+        {FEATURED_MODELS.map((m) => (
+          <article class="model">
+            <div class="model__media">
+              <img src={m.image} alt={m.imageAlt} width="600" height="600" loading="lazy" decoding="async" />
             </div>
-          </a>
+            <div class="model__body">
+              <span class="model__status">Not yet bench-tested</span>
+              <h3 class="model__name">{m.line}</h3>
+              <p class="model__role">{m.role}</p>
+              {/*
+                §26 给的卡片格式是 model · test status · 2–3 key test metrics。
+                我们没有实测值，所以：状态由上方 .model__status 明确承载，
+                三行只列**将要测的指标与单位**（§49 要求单位全站统一），
+                数值位留一个安静的破折号 —— 比重复九遍「Not yet tested」既少噪音，
+                又把「我们清楚要测什么」表达出来。
+              */}
+              <dl class="metrics">
+                {MODEL_METRICS.map((x) => (
+                  <div class="metrics__r">
+                    <dt>{x.k} <span class="metrics__u">{x.u}</span></dt>
+                    <dd aria-label="not yet measured">—</dd>
+                  </div>
+                ))}
+              </dl>
+              <p class="model__meta">
+                {approxPrice(m.priceCAD)} · {m.rating.toFixed(1)}★ from {m.ratingCount.toLocaleString('en-CA')} ratings
+              </p>
+              <a class="model__link" href={m.href}>Read the review</a>
+            </div>
+          </article>
         ))}
       </div>
-      <p class="small muted" style="margin-top:var(--s3)">
-        Lab Test Card values are published as each unit completes our protocol.
-        See <a href="/how-we-test/">how we test</a>.
+
+      <p class="models__more">
+        We track {Object.keys(PRODUCTS).length} models in the Canadian category.
+        <a href="/best-hair-dryers/">See the full ranking →</a>
+        <span class="models__note">{PRICE_NOTE}</span>
       </p>
     </section>
 
-    {/* ---------- 已发布的核心内容（首页只链向真实存在的页面） ---------- */}
-    <section>
-      <h2 class="section-title">Start Here</h2>
-      <div class="pillar-grid">
-        {FEATURED.map((f) => (
-          <a class="pillar-card" href={f.href}>
-            <h3>{f.label}</h3>
-            <p>{f.note}</p>
+    {/* ==================== §27 Start With Your Hair ==================== */}
+    <section class="sec">
+      <header class="sec__head">
+        <p class="section-title">Start With Your Hair</p>
+        <h2 class="sec__h">What matters depends on your hair</h2>
+        <p class="sec__p">
+          These are not preferences. Each line below is what the coded reviews for that
+          hair type actually complained about, or praised.
+        </p>
+      </header>
+
+      {/*
+        规范要求真实的发质摄影；我们没有，§38 又禁止图库冒充。
+        因此这里用排版承载数据，而不是放一张假图。实拍到位后换成图片卡。
+      */}
+      <div class="htiles">
+        {HAIR_TYPES.map((h) => (
+          <a class="htile" href={h.href}>
+            <span class="htile__name">{h.name}</span>
+            <span class="htile__line">{h.line}</span>
+            <span class="htile__stat">{h.stat}</span>
           </a>
         ))}
       </div>
     </section>
 
-    {/* ---------- §27 按发质 ---------- */}
-    <section>
-      <h2 class="section-title">Start With Your Hair</h2>
-      <div class="pillar-grid">
-        <a class="pillar-card" href="/hair-types/">
-          <h3>Hair Dryers by Hair Type</h3>
-          <p>{HAIR_TYPES_SUMMARY} — what actually matters for each, and what does not.</p>
-        </a>
+    {/* ==================== §28 Start With What Matters ==================== */}
+    <section class="sec">
+      <header class="sec__head">
+        <p class="section-title">Start With What Matters</p>
+        <h2 class="sec__h">Or start with the thing you actually need</h2>
+      </header>
+      <div class="needs">
+        {NEEDS.map((n) => (
+          <a class="need" href={n.href}>{n.label}</a>
+        ))}
       </div>
     </section>
 
-    {/* ---------- §28 按需求 ---------- */}
-    <section>
-      <h2 class="section-title">Start With What Matters</h2>
-      <div class="pillar-grid">
-        <a class="pillar-card" href="/best-hair-dryers/">
-          <h3>Best Hair Dryers by Need</h3>
-          <p>{NEEDS_SUMMARY}</p>
-        </a>
+    {/* ==================== 编辑精选 ==================== */}
+    <section class="sec">
+      <header class="sec__head">
+        <p class="section-title">Start Here</p>
+        <h2 class="sec__h">The three pages most people need</h2>
+      </header>
+      <div class="picks">
+        {EDITORS_PICKS.map((f) => (
+          <a class="pick" href={f.href}>
+            <span class="pick__label">{f.label}</span>
+            <span class="pick__note">{f.note}</span>
+          </a>
+        ))}
       </div>
     </section>
 
-    {/* ---------- 信任优先（§75）---------- */}
-    <section style="margin-top:var(--s8)">
-      <h2>How we work</h2>
-      <p>
-        We analyse verified Canadian reviews and Amazon.ca listing data, and we label the source of
-        every claim. We have <strong>not</strong> completed bench testing yet, and we say so on every guide
-        rather than estimating numbers. Read <a href="/how-we-test/">our methodology</a>, our
-        <a href="/editorial-policy/"> editorial policy</a>, and our
-        <a href="/affiliate-disclosure/"> affiliate disclosure</a>.
+    {/* ==================== 信任（§75 第一优先级收尾） ==================== */}
+    <section class="sec sec--trust">
+      <header class="sec__head">
+        <p class="section-title">How We Work</p>
+        <h2 class="sec__h">Read this before you trust anything above</h2>
+      </header>
+      <div class="trust">
+        {TRUST.map((t) => (
+          <div class="trust__c">
+            <h3 class="trust__h">{t.h}</h3>
+            <p class="trust__p">{t.p}</p>
+          </div>
+        ))}
+      </div>
+      <p class="trust__links">
+        <a href="/how-we-test/">Our methodology</a>
+        <a href="/editorial-policy/">Editorial policy</a>
+        <a href="/affiliate-disclosure/">Affiliate disclosure</a>
       </p>
     </section>
   </div>
 </Base>
+
+<style>
+  /* ==========================================================================
+     首页样式 —— 页面级作用域，不会进入其余 44 个页面的 CSS 包。
+     仅使用品牌规范 §14 的 token 与 §19 的间距刻度，未新增任何色值。
+     ========================================================================== */
+
+  /* ---------- §25 Hero ---------- */
+  .hhero {
+    padding: var(--s9) 0 var(--s8);
+    border-bottom: 1px solid var(--hdl-border);
+  }
+  .hhero__inner {
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+    gap: var(--s8);
+    align-items: center;
+  }
+  .hhero h1 {
+    margin: 0 0 var(--s3);
+    /* §17 桌面 H1 = 48px / line-height 1.1–1.2。不得自行放大。 */
+    font-size: 48px;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    max-width: 14ch;
+  }
+  .hhero__sub {
+    font-family: 'Manrope', sans-serif;
+    font-size: 21px;
+    font-weight: 600;
+    color: var(--hdl-navy);
+    margin: 0 0 var(--s4);
+  }
+  .hhero__desc {
+    font-size: 18px;
+    color: var(--hdl-text-secondary);
+    margin: 0 0 var(--s6);
+    max-width: 46ch;
+  }
+  .hhero__cta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s3);
+    margin-bottom: var(--s5);
+  }
+  .hhero__note {
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--hdl-text-secondary);
+    max-width: 52ch;
+    margin: 0;
+    padding-top: var(--s4);
+    border-top: 1px solid var(--hdl-border);
+  }
+
+  /* 编辑式静物：三台机器互有叠压，像一次拍摄而不是三张商品卡。
+     商品图是纯白底 JPEG（已用 Pillow 逐像素核验：两图为纯白，Dreame 仅
+     两个边缘像素为 (251,251,251)，乘算后色差约 1.6%，不可见），
+     因此用 mix-blend-mode: multiply 让白底消失，产品直接落在冰蓝面上 ——
+     不需要白色卡片托底，也就不会读成「商品网格」。
+     isolation: isolate 把混合限制在本容器内，避免与页面底色互相影响。 */
+  .hhero__still { margin: 0; }
+  .still {
+    position: relative;
+    isolation: isolate;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding: var(--s7) var(--s4) var(--s8);
+    background: var(--hdl-ice);
+    border-radius: var(--hdl-radius-md);
+  }
+  .still__item {
+    position: relative;
+    flex: 0 0 auto;
+    width: 36%;
+  }
+  .still__item img {
+    display: block;
+    width: 100%;
+    height: auto;
+    mix-blend-mode: multiply;
+  }
+  .still__item--l { z-index: 1; transform: translateY(8px) scale(0.9); }
+  .still__item--c { z-index: 3; width: 47%; margin: 0 -5%; }
+  .still__item--r { z-index: 2; transform: translateY(3px) scale(0.95); }
+  .still__tag {
+    position: absolute;
+    left: 50%;
+    bottom: calc(-1 * var(--s5));
+    transform: translateX(-50%);
+    font-family: 'Manrope', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--hdl-text-secondary);
+    white-space: nowrap;
+  }
+  .hhero__cap {
+    font-size: 13px;
+    color: var(--hdl-text-secondary);
+    margin: var(--s6) 0 0;
+    text-align: center;
+  }
+
+  /* ---------- 信任条 ----------
+     §13 把 Ice Blue 指定给「testing modules / methodology sections /
+     light information backgrounds」，本区块正是这类内容，因此用冰蓝而非深色。
+     Navy 在 §13 的用途是 logo / 导航 / 标题 / 标签 / 对比表头，不是整幅底色；
+     品牌也要求「editorial rather than app-like」，通幅深色带会偏 app 感。 */
+  .proof {
+    background: var(--hdl-ice);
+    border-top: 1px solid var(--hdl-border);
+    border-bottom: 1px solid var(--hdl-border);
+    padding: var(--s7) 0;
+    margin-bottom: var(--s8);
+  }
+  .proof__eyebrow {
+    font-family: 'Manrope', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--hdl-text-secondary);
+    margin: 0 0 var(--s5);
+  }
+  .proof__row {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--s5);
+    margin: 0;
+  }
+  .stat { margin: 0; }
+  .stat__n {
+    font-family: 'Manrope', sans-serif;
+    font-size: 44px;
+    font-weight: 800;
+    line-height: 1;
+    color: var(--hdl-navy);
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+  .stat__u {
+    font-size: 17px;
+    font-weight: 600;
+    margin-left: 3px;
+    color: var(--hdl-text-secondary);
+  }
+  .stat__l {
+    display: block;
+    margin: var(--s3) 0 0;
+    /* §17 Small = 14–15px */
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--hdl-navy);
+    line-height: 1.45;
+  }
+  .stat__sub {
+    display: block;
+    margin-top: var(--s1);
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--hdl-text-secondary);
+  }
+
+  /* ---------- 通用 section 骨架 ---------- */
+  .sec { padding: var(--s8) 0; border-bottom: 1px solid var(--hdl-border); }
+  .sec:last-of-type { border-bottom: 0; }
+  .sec__head { max-width: 62ch; margin-bottom: var(--s6); }
+  .sec__h {
+    margin: var(--s2) 0 var(--s3);
+    font-size: 34px;
+    line-height: 1.2;
+  }
+  .sec__p { margin: 0; font-size: 17px; color: var(--hdl-text-secondary); }
+
+  /* ---------- §26 机型卡 ---------- */
+  .models {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--s5);
+  }
+  .model {
+    display: flex;
+    flex-direction: column;
+    background: var(--hdl-white);
+    border: 1px solid var(--hdl-border);
+    border-radius: var(--hdl-radius-md);
+    overflow: hidden;
+  }
+  .model__media {
+    aspect-ratio: 4 / 5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--s4);
+    border-bottom: 1px solid var(--hdl-border);
+  }
+  .model__media img { width: 100%; height: 100%; object-fit: contain; }
+  .model__body { padding: var(--s5); display: flex; flex-direction: column; flex: 1; }
+  .model__status {
+    align-self: flex-start;
+    font-family: 'Manrope', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--hdl-text-secondary);
+    background: var(--hdl-background);
+    border: 1px solid var(--hdl-border);
+    border-radius: var(--hdl-radius-pill);
+    padding: 3px var(--s3);
+    margin-bottom: var(--s3);
+  }
+  /* §17 桌面 H3 = 24px */
+  .model__name { font-size: 24px; margin: 0 0 var(--s1); line-height: 1.25; }
+  .model__role {
+    font-size: 14.5px;
+    color: var(--hdl-text-secondary);
+    margin: 0 0 var(--s4);
+  }
+  .metrics { margin: 0 0 var(--s4); }
+  .metrics__r {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--s3);
+    padding: var(--s2) 0;
+    border-bottom: 1px solid var(--hdl-border);
+    font-size: 14px;
+  }
+  .metrics__r:last-child { border-bottom: 0; }
+  .metrics__r dt { color: var(--hdl-text-secondary); }
+  .metrics__u {
+    font-family: 'Manrope', sans-serif;
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: var(--hdl-text-secondary);
+    opacity: 0.75;
+  }
+  .metrics__r dd {
+    margin: 0;
+    font-family: 'Manrope', sans-serif;
+    font-weight: 700;
+    color: var(--hdl-border);
+    font-variant-numeric: tabular-nums;
+  }
+  .model__meta {
+    font-size: 13.5px;
+    color: var(--hdl-text-secondary);
+    margin: 0 0 var(--s4);
+  }
+  /* 把 CTA 推到底部，三张卡的行动点对齐 */
+  .model__link {
+    margin-top: auto;
+    font-family: 'Manrope', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+  }
+  .models__more {
+    margin: var(--s5) 0 0;
+    font-size: 14.5px;
+    color: var(--hdl-text-secondary);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s3) var(--s4);
+    align-items: baseline;
+  }
+  .models__note { flex: 1 1 320px; font-size: 13px; }
+
+  /* ---------- §27 发质入口 ---------- */
+  .htiles {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--s4);
+  }
+  .htile {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s2);
+    padding: var(--s5);
+    min-height: 190px;
+    background: var(--hdl-white);
+    border: 1px solid var(--hdl-border);
+    border-top: 3px solid var(--hdl-navy);
+    border-radius: var(--hdl-radius-md);
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.15s ease, transform 0.15s ease;
+  }
+  .htile:hover { border-color: var(--hdl-navy); transform: translateY(-2px); }
+  .htile__name {
+    font-family: 'Manrope', sans-serif;
+    font-size: 19px;
+    font-weight: 700;
+    color: var(--hdl-navy);
+  }
+  .htile__line { font-size: 15px; line-height: 1.5; color: var(--hdl-text); flex: 1; }
+  .htile__stat {
+    font-size: 12.5px;
+    color: var(--hdl-text-secondary);
+    font-variant-numeric: tabular-nums;
+    padding-top: var(--s3);
+    border-top: 1px solid var(--hdl-border);
+  }
+
+  /* ---------- §28 需求入口 ---------- */
+  .needs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s2);
+  }
+  .need {
+    font-size: 15px;
+    font-weight: 500;
+    padding: var(--s2) var(--s4);
+    background: var(--hdl-white);
+    border: 1px solid var(--hdl-border);
+    border-radius: var(--hdl-radius-pill);
+    text-decoration: none;
+    color: var(--hdl-text);
+    transition: border-color 0.15s ease, color 0.15s ease;
+  }
+  .need:hover { border-color: var(--hdl-navy); color: var(--hdl-navy); }
+
+  /* ---------- 编辑精选 ---------- */
+  .picks { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s4); }
+  .pick {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s2);
+    padding: var(--s5);
+    min-height: 160px;
+    text-decoration: none;
+    color: inherit;
+    border: 1px solid var(--hdl-border);
+    border-radius: var(--hdl-radius-md);
+    background: var(--hdl-white);
+    transition: border-color 0.15s ease;
+  }
+  .pick:hover { border-color: var(--hdl-navy); }
+  .pick__label {
+    font-family: 'Manrope', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--hdl-navy);
+    line-height: 1.3;
+  }
+  .pick__note { font-size: 14.5px; color: var(--hdl-text-secondary); line-height: 1.5; }
+
+  /* ---------- 信任收尾 ---------- */
+  .sec--trust { padding-bottom: var(--s9); }
+  .trust { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s5); }
+  .trust__c {
+    padding-top: var(--s4);
+    border-top: 2px solid var(--hdl-navy);
+  }
+  /* §17 桌面 H3 = 24px */
+  .trust__h { font-size: 24px; margin: 0 0 var(--s2); }
+  .trust__p { font-size: 15px; line-height: 1.6; color: var(--hdl-text-secondary); margin: 0; }
+  .trust__links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s5);
+    margin: var(--s6) 0 0;
+    font-size: 15px;
+    font-weight: 500;
+  }
+
+  /* ---------- 响应式：移动优先的断点下行 ---------- */
+  @media (max-width: 1024px) {
+    .hhero { padding: var(--s7) 0 var(--s6); }
+    .hhero__inner { grid-template-columns: 1fr; gap: var(--s6); }
+    .hhero h1 { font-size: 40px; max-width: none; }
+    .proof__row { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s6) var(--s5); }
+    .stat__n { font-size: 38px; }
+    .models { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .htiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .picks { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .trust { grid-template-columns: 1fr; gap: var(--s4); }
+    .sec__h { font-size: 27px; }
+  }
+
+  @media (max-width: 640px) {
+    /* §17 移动端 H1 32–34 / H2 26–28 / H3 21–23 */
+    .hhero h1 { font-size: 33px; }
+    .hhero__sub { font-size: 18px; }
+    .hhero__desc { font-size: 17px; }
+    .sec__p { font-size: 16.5px; }
+    .model__name, .trust__h { font-size: 22px; }
+    .pick__label { font-size: 18px; }
+    .hhero__cta { flex-direction: column; align-items: stretch; }
+    .hhero__cta :global(.cta) { text-align: center; }
+    .still { padding: var(--s5) var(--s2) var(--s6); }
+    .still__item--l, .still__item--r { width: 32%; }
+    .still__tag { display: none; }
+    .hhero__cap { margin-top: var(--s5); }
+    .proof { padding: var(--s6) 0; }
+    .proof__row { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s5) var(--s4); }
+    .stat__n { font-size: 32px; }
+    .stat__l { font-size: 14px; }
+    .stat__sub { font-size: 13.5px; }
+    .sec { padding: var(--s7) 0; }
+    .sec__h { font-size: 26px; }
+    .models { grid-template-columns: 1fr; }
+    .htiles { grid-template-columns: 1fr; }
+    .htile { min-height: 0; }
+    .picks { grid-template-columns: 1fr; }
+    .pick { min-height: 0; }
+    .models__more { flex-direction: column; gap: var(--s2); }
+  }
+</style>
